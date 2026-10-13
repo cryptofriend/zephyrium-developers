@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkzephyrium_docs||=[]).push([[647],{7121(e,r,s){s.r(r),s.d(r,{default:()=>i});s(6540);var u=s(4164),a=s(7559),c=s(5500),t=s(2831),d=s(1973),h=s(4848);function i(e){return(0,h.jsx)(c.e3,{className:(0,u.A)(a.G.wrapper.docsPages),children:(0,h.jsx)(d.A,{children:(0,t.v)(e.route.routes)})})}}}]);

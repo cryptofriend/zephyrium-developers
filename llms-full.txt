@@ -1,0 +1,1450 @@
+# Zephyrium Docs
+
+> Documentation for Zephyrium, a privacy-preserving layer-1 chain with the ZEP coin.
+
+This file contains all documentation content in a single document following the llmstxt.org standard.
+
+## Concepts
+
+Zephyrium is a layer-1 chain where privacy is the default for transfers. It is a fork of Incognito Chain and uses the same transaction system; see [Credits](/resources/credits).
+
+### What is private
+
+| | Transfers of ZEP and tokens | Swaps on iDEX | Staking |
+|---|---|---|---|
+| Sender | Hidden in a ring of 8 | Hidden in a ring of 8 | Public |
+| Receiver | One-time address | One-time address | Public |
+| Amount | Hidden | **Public** | Public |
+| Which token | Hidden for tokens in confidential-asset mode | **Public** | ZEP only |
+
+Three mechanisms do the work:
+
+- **Ring signatures.** A spend is signed by a ring of eight keys. One is the real spender; seven are decoys taken from the chain.
+- **One-time addresses.** Every payment lands on a fresh address derived for that payment, so two payments to the same person look unrelated.
+- **Hidden amounts.** Amounts are commitments. A range proof shows the amount is valid and that inputs equal outputs, without revealing the number.
+
+### How the chain is built
+
+- **Shards** process transactions, token transfers and swaps. The devnet runs one shard.
+- **The beacon chain** coordinates the shards: it records who the validators are, confirms shard blocks and carries messages between shards.
+- **Committees** of validators sign blocks. A block is final when more than two thirds of the committee sign it.
+- **The highway** is a relay that every node connects to. It introduces nodes to each other and forwards their messages.
+
+[Node types](/validators/node-types) explains who runs each part.
+
+### Current limits
+
+These are known and on the [roadmap](/resources/roadmap):
+
+- **Small rings with uniform decoys.** Eight members, chosen without regard to coin age, is weaker than a larger, age-aware ring.
+- **Swap amounts are public.** iDEX hides who trades, not how much or which pair.
+- **The highway is a single relay.** It can see which address a transaction came from, and the chain stops if it is down.
+- **Fixed committee seats.** On the devnet, 5 of 7 shard seats and all 4 beacon seats are held by fixed validators.
+- **Wallets share a viewing key with their node.** A wallet registers a viewing key with the node it uses so the node can find its coins.
+- **No slashing penalty.** A validator that misbehaves loses its seat and gets its stake back.
+
+---
+
+## Quick start
+
+A devnet is a complete private network on one machine: a highway, 4 beacon validators, 5 shard validators and a full node. It produces a block about every 10 seconds.
+
+### Requirements
+
+- Go 1.24 or newer, python3, curl
+- macOS or Linux. Only macOS on Apple Silicon has been tested.
+- Free ports: 9330, 9334-9344, 9350-9354, 9434-9454
+
+### 1. Create the keys (once)
+
+Validator and treasury keys live in `secrets/secrets.json`, which is git-ignored. On a new machine:
+
+```bash
+mkdir -p secrets && cd secrets
+GO111MODULE=on GOFLAGS=-mod=mod go run -ldflags=-checklinkname=0 ../utility/genzephyriumkeys
+# writes keylist.json, keylist-v2.json and secrets.json into this folder
+cp keylist.json keylist-v2.json ../config/local/
+cd ..
+GO111MODULE=on GOFLAGS=-mod=mod go run -ldflags=-checklinkname=0 ./utility/gengenesis
+```
+
+`gengenesis` adds a treasury key and the DAO, finance and satoshi keys to `secrets/secrets.json`, writes `config/local/init_tx.json`, and prints three addresses. Put those addresses into `config/local/param.yaml` as `dao_address`, `finance_address` and `satoshi_address`.
+
+Back up `secrets/secrets.json`. It is the only copy of the private keys.
+
+### 2. Build
+
+```bash
+GO111MODULE=on GOFLAGS=-mod=mod go build -ldflags=-checklinkname=0 -o incognito ./
+```
+
+The `-ldflags=-checklinkname=0` flag is required with Go 1.24 or newer. The program is still named `incognito`; see [Differences from Incognito](/protocol/differences-from-incognito#names).
+
+### 3. Launch
+
+```bash
+./launch_local.sh
+```
+
+This builds the highway on first use, starts it, then starts the nodes one second apart. Logs go to `logs/`, chain data to `data/`.
+
+### 4. Check
+
+```bash
+python3 tests/devnet/check.py
+```
+
+It checks block production, the genesis balance, the stake rules, the reward split after the first epoch, and a DEX swap. It takes about 10 minutes because it waits for an epoch to end. Add `--stakers` to also stake two outside validators and wait until one is seated and paid (about 30 minutes; start `./start_node.sh shard0-5` and `./start_node.sh shard0-6` first).
+
+To query the chain yourself, the full node answers JSON-RPC on port 9354:
+
+```bash
+curl -s -X POST http://127.0.0.1:9354 -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"1.0","method":"getblockchaininfo","params":[],"id":1}'
+```
+
+### 5. Stop and reset
+
+```bash
+./stop_local.sh          # stops only this folder's nodes and highway
+rm -rf data logs         # optional: the next launch starts a new chain at block 1
+```
+
+A reset is required after changing genesis or committee settings. Do not use the inherited `stop.sh`; it closes every tmux session on the machine.
+
+### Nodes and ports
+
+| Node | Role | Peer port | RPC port |
+|---|---|---|---|
+| highway | Introduces nodes and relays messages | 9330 | none |
+| beacon-0 to beacon-3 | Beacon validators | 9450-9453 | 9350-9353 |
+| shard0-0 to shard0-3 | Fixed shard validators | 9434-9437 | 9334-9337 |
+| shard0-4 | Fixed shard validator | 9442 | 9342 |
+| shard0-5, shard0-6 | Spare nodes for staked validators | 9443, 9444 | 9343, 9344 |
+| full_node | Follows all chains; query this one | 9454 | 9354 |
+
+---
+
+## Zephyrium Documentation
+
+import {Hero, QuickStart, CardGrid, Card, UseCases, Pills, Status, CTA} from '@site/src/components/Home';
+
+Run a node, stake as a validator and build on a privacy chain that hides who paid whom and how much.
+
+### Guides
+
+  A full private network on one machine
+  Stake, get a seat, earn rewards
+  One billion cap, minted over 21 years
+  Trade in pools built into the chain
+
+### Use cases
+
+### Products
+
+  Browser wallet; keys stay on your device
+  Pools and swaps built into the chain
+  Private tokens anyone can create
+  What changed from Incognito, and what stayed
+
+### Network status
+
+  There is no public testnet or mainnet yet. Everything in these docs runs on a devnet you start yourself.
+
+### Resources
+
+  One script starts a highway, four beacon validators, five shard validators and a full node on your machine.
+
+---
+
+## iDEX
+
+iDEX is an exchange that is part of the chain itself: pools and swaps are handled by the validators, with no separate contract to deploy.
+
+### How it works
+
+- **Pools** hold two assets and price swaps with the constant-product rule: the product of the two balances stays the same through a trade.
+- **Liquidity providers** add both assets to a pool. A position is tied to a position key that the provider mints once.
+- **Swaps** burn the asset being sold and pay out the asset being bought to a one-time address.
+
+| Setting | Devnet value |
+|---|---|
+| Default pool fee | 0.30% |
+| Highest fee a pool can have | 2% |
+| Cost to mint a position key | 1 ZEP |
+
+### What is private, and what is not
+
+| | On iDEX today |
+|---|---|
+| Who traded | Hidden: the trade is signed by a ring of 8 |
+| Where the proceeds go | Hidden: a one-time address |
+| Amount sold | **Public** |
+| Token pair | **Public** |
+
+iDEX gives anonymous trades, not confidential ones. Hiding swap amounts is a research item on the [roadmap](/resources/roadmap).
+
+### Try it on the devnet
+
+The devnet check creates a test token, adds a ZEP pool for it and swaps 1 ZEP:
+
+```bash
+python3 tests/devnet/check.py
+```
+
+The last line of its output reports the swap, for example `DEX swap: 1 ZEP bought 1.998002 iUSDt`.
+
+### Names in the code
+
+The code and RPC methods still use the inherited name, `pdex`. The methods you will see are `pdexv3_getState`, `pdexv3_txAddLiquidity` and `pdexv3_txTrade`.
+
+### Known limit
+
+A single admin key can still change iDEX parameters such as fee rates. Removing it is the first phase of the [roadmap](/resources/roadmap).
+
+---
+
+## iTokens
+
+An iToken is a token on Zephyrium that moves with the same privacy as ZEP: the sender hides in a ring, the receiver gets a one-time address and the amount is hidden.
+
+### Creating one
+
+Any account can create a token with a fixed supply in one transaction. The whole supply is issued to the creator.
+
+On the devnet this is the `createandsendtokeninittransaction` RPC method, and iWallet lists the new token once it arrives. A newly created token needs a few blocks before it can be spent.
+
+### Privacy of a token transfer
+
+| | Visible to the public? |
+|---|---|
+| Sender | No |
+| Receiver | No |
+| Amount | No |
+| Which token | Hidden for tokens in confidential-asset mode; visible otherwise |
+
+Making confidential-asset mode the rule for every token is on the [roadmap](/resources/roadmap).
+
+### What is planned
+
+- **Issuer-owned tokens** with a public registry entry and an optional mintable supply.
+- **An auditor key per token**, so an issuer can show activity to a regulator without showing it to everyone.
+- **Private distributions** such as dividends to current holders.
+
+### Known limit
+
+The code inherited a central issuing key that can mint new tokens. It is scheduled for removal in the first phase of the [roadmap](/resources/roadmap).
+
+---
+
+## iWallet
+
+iWallet is a Chrome extension wallet for the Zephyrium devnet. It builds private transactions in the browser, so spending keys never leave your device.
+
+:::note Devnet only
+iWallet is not in the Chrome Web Store. It is loaded as an unpacked extension and connects to a devnet node. Coins on a devnet have no value.
+:::
+
+### What it does
+
+| Feature | Details |
+|---|---|
+| Send and receive ZEP | Payments land on one-time addresses automatically |
+| Tokens | Lists every iToken you hold and sends them |
+| iDEX | Add liquidity and swap from the popup |
+| Connect to apps | Web pages can request a connection, balances and transactions; each needs your approval |
+
+### How it protects keys
+
+- The wallet seed is encrypted on your device with your password.
+- Ring signatures and range proofs are computed in the browser, then the finished transaction is sent to a node.
+- Building a transaction takes roughly 5 to 15 seconds, and the popup has to stay open while it does.
+
+### What the node learns
+
+To find your coins, the wallet registers a **viewing key** with the node it uses. That node can see your incoming coins; it cannot spend them. Use a node you run yourself if that matters to you. Removing this step is on the [roadmap](/resources/roadmap).
+
+### Fees on the devnet
+
+| Transaction | Minimum fee |
+|---|---|
+| ZEP transfer | 0.1 ZEP |
+| Token transaction | 10 ZEP |
+
+---
+
+## Differences from Incognito
+
+Zephyrium started from Incognito Chain (see [NOTICE](/resources/credits) for the exact source). This page lists what has changed and what has deliberately stayed the same.
+
+### Changed
+
+| Area | Incognito | Zephyrium |
+|---|---|---|
+| Coin | PRV, 100M cap | ZEP, 1,000,000,000 cap |
+| Minting | 9% yearly decrease, no end date | 10% yearly decrease, ends after 21 years |
+| Reward split | 10% to the DAO falling to 3%, rest to validators | 309/330/330/10 of 979 to validators, finance, DAO, satoshi |
+| Minting cap | Enforced only from a later block version | Counted from the first block |
+| Shard stake | 1,750 PRV, hard-coded | 21,000 ZEP, set in config |
+| Beacon stake minimum | 87,500 PRV, hard-coded | 210,000 ZEP, set in config |
+| Local network genesis | Coins on a publicly known test key | 21,000,000 ZEP on a freshly generated key |
+| Local network committee keys | Derived from a public passphrase | Generated from fresh randomness |
+| Highway | Separate repository | Bundled under `./highway` |
+| Highway bug | Staked validators could not report features and were never seated | Fixed |
+| Devnet scripts | Keys written into scripts | Keys read from an uncommitted secrets file |
+
+### Not changed
+
+The privacy transaction system, the consensus protocol, the DEX and the bridge code are as inherited. Zephyrium has not yet changed any cryptography.
+
+Known inherited limits that are planned work, not finished work, are in the [roadmap](/resources/roadmap).
+
+### Names
+
+| Incognito | Zephyrium | Renamed in code? |
+|---|---|---|
+| Incognito | Zephyrium | Yes, in text and the Go module path |
+| PRV | ZEP | The display name is ZEP. Identifiers and JSON fields such as `FeeInPRV`, and the `"PRV"` key in RPC replies, are unchanged. |
+| Incognito Wallet | iWallet | Separate project, not in this repository |
+| `incognito` (the program) | `incognito` | No |
+| `INCOGNITO_*` environment variables | unchanged | No |
+| pDEX | iDEX | No; the code and RPC methods still say `pdex` |
+| pToken | iToken | No |
+
+Identifiers, RPC field names and the program name are left as they are on purpose. Renaming them would break wallets and tools that talk to a node, and would change stored chain data.
+
+In documents, "Incognito" is kept wherever it refers to the upstream project or its history.
+
+---
+
+## Architecture
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+Incognito is a privacy-protecting blockchain. It uses peer-to-peer technology to operate with no central authority. Activities and transactions are carried out collectively by nodes of the network. In return, nodes earn block rewards in Privacy (the native token) and transaction fees in various cryptocurrencies like BTC, ETH, and more.
+
+Here are they key components of the Incognito architecture.
+
+![](https://user-images.githubusercontent.com/4691695/67144758-ab0fab80-f2a4-11e9-881d-75432653fd24.png)
+
+* **P2P Networking**
+
+  * **Peer Management**. Peer management handles peer-to-peer communications such as finding peers, connecting to them, sending and receiving transactions, blocks, and messages. Its code is in the [connmanager](https://github.com/levietcuong2602/incognito-chain/tree/master/connmanager) package and the [addrmanager](https://github.com/levietcuong2602/incognito-chain/tree/master/addrmanager) package.
+
+  * **NetSync**. NetSync is a mediator that receives incoming messages, parses them, and routes the messages to the right components. Its code is in [netsync](https://github.com/levietcuong2602/incognito-chain/tree/master/netsync) package.
+
+  * **Highway**. Highway is a new network topology design that speeds up P2P communications. It is under development under the [highway](https://github.com/levietcuong2602/incognito-chain/tree/highway) branch and will be merged into the master branch in November 2019.
+
+* **Blockchain**
+
+  * **Shards**. Shards are subchains. A subchain is a Proof-of-Stake blockchain with its own committee of N nodes. A shard's job is to produces new block via a Practical Byzantine Fault Toloerance (pBFT) consenus algorithm. Its code is in the [blockchain](https://github.com/levietcuong2602/incognito-chain/tree/master/blockchain) package.
+
+  * **Beacon**. Beacon is also a subchain. A beacon's job is to coordinates the shards and maintain the global state of the network. Its code is in the [blockchain](https://github.com/levietcuong2602/incognito-chain/tree/master/blockchain) package.
+
+  * **Synker**. Synker makes sure the node is up to date among its peers and also broadcasts the node status to its peers. Its code is in the [blockchain](https://github.com/levietcuong2602/incognito-chain/tree/master/blockchain) package.
+
+  * **Mempool**. Mempool (memory pool) is a collection of transactions and blocks that have been verified but are not yet confirmed. Its code is in the [mempool](https://github.com/levietcuong2602/incognito-chain/tree/master/mempool) package.
+
+  * **Wallet**. Software that holds all your Incognito keys. Use it to send and receive your Incognito tokens. Its code is in the [wallet](https://github.com/levietcuong2602/incognito-chain/tree/master/wallet) package.
+
+  * **Database**. Incognito uses LevelDB to store block data. Its code is in the [database](https://github.com/levietcuong2602/incognito-chain/tree/master/database) package.
+
+* **Core**
+
+  * **Consensus**
+
+    * **pBFT**. For consensus algorithm, Incognito implements pBFT (Practical Byzantine Fault Tolerance). Its code is in the [blsbft](https://github.com/levietcuong2602/incognito-chain/tree/master/consensus/blsbft) package.
+
+    * **BLS**. For multi-signature agregation, Incognito implements BLS Multi-Signatures. Its code is in the [blsmultisig](https://github.com/levietcuong2602/incognito-chain/tree/master/consensus/signatureschemes/blsmultisig) package.
+
+    * **RNG**. For random number generator, Incognito currently uses Bitcoin block hash. We'll explore other RNG solutions in the future. Its code is in the [btc](https://github.com/levietcuong2602/incognito-chain/tree/master/blockchain/btc) package.
+
+  * **Privacy**
+
+    * **RingCT**. For privacy, Incognito implements RingCT (Ring Confidential Transaction) with ring signatures, stealth addresses, and confidential transactions. Its code is in the [privacy](https://github.com/levietcuong2602/incognito-chain/tree/master/privacy) package.
+
+    * **Confidential Asset**. RingCT hides the amount of the transaction, but it doesn't hide the type of asset being sent. Confidential Asset solves that. It's under development under the [new-privacy-dev](https://github.com/levietcuong2602/incognito-chain/tree/new-privacy-dev) branch and will be merged into the master branch in December 2019.
+
+    * **Mobile ZKP**. Incognito implements Zero-Knowledge Proofs (ZKP) Generation on mobile. Private transactions can be sent on any regular phone under 15 seconds. Its code is in the [wasm](https://github.com/levietcuong2602/incognito-chain/tree/master/privacy/wasm) package and the [zeroknowledge](https://github.com/levietcuong2602/incognito-chain/tree/master/privacy/zeroknowledge) package.
+
+  * **Bridges**
+
+    * **Ethereum**. Incognito implements a trustless two-way bridge between Incognito and Ethereum to let anyone send and receive ETH & ERC20 privately. Its code is in the [bridge-eth](https://github.com/incognitochain/bridge-eth) repository.
+
+    * **Bitcoin**.  Incognito is working on a trustless two-way bridge between Incognito and Bitcoin to let anyone send and receive BTC privately. Estimated ship date: Dec 2019.
+
+    * **Cosmos**.  Incognito is exploring Cosmos and hops to build on a trustless two-way bridge between Incognito and Cosmos. Estimated ship date: March 2020.
+
+* **Developer Tools**
+
+  * **RPC**. RPC lets developers interact with Incognito via your own programs. Its code is in the [rpcserver](https://github.com/levietcuong2602/incognito-chain/tree/master/rpcserver) package.
+
+  * **WebSocket**. WebSocket is another way for developers to interact with Incognito via your own programs. Its code is in the [rpcserver](https://github.com/levietcuong2602/incognito-chain/tree/master/rpcserver) package.
+
+  * **SDK**. Incognito is working on Developer SDKs to make it even easier to build on top of Incognito. Estimated ship date: Nov 2019.
+
+* **Apps**
+
+  * **Mobile Apps**. It's easy to build your own mobile apps on top of Incognito, once the SDK is available. Here is an example: [Mobile Wallet](https://github.com/levietcuong2602/incognito-chain-wallet-client-app).
+
+  * **Web Apps**. It's easy to build your web apps on top of Incognito, once the SDK is available. Here are some examples: [Web Wallet](https://github.com/levietcuong2602/incognito-chain-wallet-client-2) or a [Desktop Network Monitor](https://github.com/incognitochain/incognito-monitor).
+
+  * **Hardware Devices**. It's easy to build your own hardware on top of Incognito, once the SDK is available. Here is an example: [Node Device](https://github.com/incognitochain/incognito-node).
+
+---
+
+## Burn address
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+* Burn address: is a special address on Incognito chain, which is not accessible by anyone, since no one owns the private keys to that address.
+
+* Burned assets (coins or tokens): mean eliminated assets by sending them to a burn address.
+
+* Minted assets (coins or tokens): mean created new assets then distributed them to some address on Incognito chain.
+
+In Incognito chain, we use "burn and mint mechanism" to archive consensus in some cases such as stake/unstake, deposit/withdraw token in the bridge, and pDEX.
+
+##### How to generate Burn Address
+* The formula to generate burn address is as follows:
+
+                      Hash(G, "burningaddress", index)
+
+    where 
+    * ```Keccak256``` is used as the hash function,
+    * ```G``` is the base point of Edwards25519,
+    * ```"burningaddress" ``` is a hard code string, 
+    * ```index``` is the minimum positive integer number such that the last byte of output is zero (it will make sure that burn address belongs in Shard 0).
+
+* The burn address at ```index = 68``` in ```base58encode``` is:
+```15pGE5XZc7gsHSLgQxgZRVt7UsXBodiyTYe6xtvXipTFQPMpdQqtXhkzriL```
+
+#### Why no one can recompute the private key
+
+Based on two assumptions:
+* Function ```Hash```  is one-way and unpredictable, the output of ```Hash```  is an unpredictable point ```H=xG```
+* To recover the private key ```x```, we need to solve the discrete log problem. The probabilistic to solve the discrete log problem on Edward25519 is negligible. 
+
+Thus, no one can recompute the private key.  
+
+##### Reference
+[1] https://github.com/levietcuong2602/incognito-chain/blob/dev/master/utility/generateburnaddress.go
+
+---
+
+## Curve
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+### Introduction
+Elliptic Curve Cryptography (ECC) is a form of public-key cryptography from which the security relies on the Elliptic Curve Discrete Logarithm Problem.  Recently, ECC has become the predominant cryptosystem found in most blockchain projects (except some projects based on post-quantum cryptosystem).
+
+At the first stage of the Incognito project, we use the P-256 ECC library built-in of Golang to implement cryptography protocols. However, the performance is not as we expected. Finally, we decide to use the Edwards25519 library from Dero Project [1], this curve is also used in Monero Project. 
+
+### What is Edwards25519
+Edwards25519 is a variant of Curve25519 built by Bernstein in 2006 that is very useful for digital signatures scheme. This is the standard Edwards25519 curve definition from [2]. 
+
+##### Curve equation: 
+Edwards25519 is defined over the prime field ![equation](https://latex.codecogs.com/gif.latex?F_%7B2%5E%7B255%7D%20-19%7D) as follows:
+
+![equation](https://latex.codecogs.com/gif.latex?-x%5E2%20&plus;%20y%5E2%20%3D%201%20-%20%5Cfrac%7B121665%7D%7B121666%7D%20x%5E2y%5E2)
+
+##### Base Point:
+G = (x, 4/5) 
+
+This is a specific point on the curve. It is used as a basis for all calculations on this curve. 
+
+##### Order of the base point: 
+![equation](https://latex.codecogs.com/gif.latex?l%20%3D%202%5E%7B252%7D%20&plus;%2027742317777372353535851937790883648493)
+
+This value is a prime number specified by the curve authors. The ![equation](https://latex.codecogs.com/gif.latex?l) defines the maximum scalar we can use.  
+
+##### Total number of points on the curve:
+
+![equation](https://latex.codecogs.com/gif.latex?q%20%3D%202%5E%7B255%20%7D-%2019). 
+
+This is a prime number and gives the name of the curve.
+
+### Why is it better than our previous scheme
+
+**Security**: In 2013 Bernstein and Lange started a website called SafeCurves that lists criteria for a structured analysis of the security of different elliptic curves. It can be observed that Curve25519 passes all the criteria. This result is applicable to Edwards25519 as well because the used curve is equivalent to Curve25519. P-256, however, does not pass all criteria. In particular, the following four criteria: Rigidity, Completeness, Infistinguishability, Ladders. See more detail in [3].
+
+**Performance**: The performance of Edwards25519 and P-256 were similar when comparing the fast assembly language implementation of P-256 and the reference implementation of Edwards25519 that were available in OpenSSL as of June 2017. However, our benchmarks show that the performance of cryptography protocols based on Edwards25519 is more times faster than the implementation based on P-256.
+
+##Benchmarks
+
+These results show that the implementation based on Edwards25519 at least two times faster the implementation based on P-256. This improvement will help the Incognito chain can produce more transactions in each block. 
+
+| Number of Outputs | 2       | 4        | 8        | 16       |
+|:-----------------:|:-------:|:--------:|:--------:|:--------:|
+| Prove             | 34.06ms | 121.47ms | 242.29ms | 473.66ms |
+| Verify            | 17.62ms | 66.26ms  | 130.95ms | 263.93ms |
+
+Table 1: Performance of Prove and Verify functions based on Edwards25519
+
+| Number of Outputs | 2        | 4        | 8        | 16       |
+|:-----------------:|:--------:|:--------:|:--------:|:--------:|
+| Prove             | 106.10ms | 398.58ms | 788.21ms | 1566.16ms |
+| Verify            | 44.74ms  | 176.24ms  | 352.49ms | 709.98ms |
+
+Table2: Performance of Prove and Verify functions based on P-256 
+
+### References
+[1] https://github.com/deroproject/derosuite/tree/master/crypto
+
+[2] Bernstein, Daniel J.; Lange, Tanja (2007). Kurosawa, Kaoru (ed.). Faster addition and doubling on elliptic curves. Advances in Cryptology—ASIACRYPT.
+
+[3] https://safecurves.cr.yp.to/index.html
+
+---
+
+## Ethereum bridge
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+Enabling private ETH/ERC20 transactions via a fully decentralized bridge between Incognito and Ethereum
+
+### Introduction
+
+Incognito is a high-throughput proof-of-stake sidechain, made possible by the implementation of state sharding. Incognito takes a practical approach in designing and implementing its consensus mechanism, based on previous research and existing engineering by OmniLedger, Bitcoin, Ethereum 2.0, and Zilliqa.
+
+The Incognito sidechain can be attached to any blockchain to conduct confidential asset transfer — in this case, Ethereum. The Incognito sidechain runs parallel to main blockchains, allowing for secure two-way transfers of crypto assets whenever privacy is needed.
+
+This post will detail the means by which Incognito enables 100% confidential transfers of ETH and ERC20 tokens.
+
+### Incognito mode for Ethereum
+
+In this post, we present the Incognito-Ethereum bridge — designed for fully decentralized cross-chain interoperability. Implementations will enable cross-chain communication between the two blockchains, and enable the choice of “incognito mode” for transfers of crypto assets (ETH and ERC20 tokens). Using this bridge, anyone can turn on privacy for their tokens and shield their balances and activity.
+
+![Ethereum + Incognito Trustless Birdge](https://i.postimg.cc/W4ygMzmh/0-5-Noou-G41-Mp2m-TUl.png)
+
+In the following sections, we will define and explain the functionality of the bridge as well as the mechanism by which such requirements are implemented.
+
+### Cross-chain asset transfer
+
+A bridge can facilitate the transfer of crypto assets (e.g. tokens) between two blockchains by implementing locking, minting and burning mechanisms on each blockchain. When tokens are sent to a locking contract on Ethereum, Incognito needs to verify that the “locking” transaction was indeed confirmed on Ethereum, and upon the submission of the token lock transaction on Ethereum, proceed to mint a corresponding amount of privacy tokens (e.g., private Ether or private ERC20 tokens). When the private tokens are burned, the locking contract on Ethereum will verify the validity and unlock it upon submission of proof. This effectively maintains a 1:1 ratio between the private token on Incognito and the original token on Ethereum.
+
+### Ethereum ➔ Incognito
+
+To convert ETH/ERC20 tokens on Ethereum to private ETH/ERC20 (pETH/pERC20) tokens on Incognito, users simply need to deposit their tokens to the Incognito Wallet. Under the hood, users are in effect sending their ETH or ERC20 tokens to a decentralized smart contract on Ethereum then sending the proof of that transaction to Incognito.
+
+The Incognito chain verifies that proof and extracts information from it in order to mint private tokens to the predefined address.
+The whole process is illustrated in the following figure.
+
+![Mint private ETH/ERC20](https://i.postimg.cc/tCBcrnbS/0-2-Es-ULaqrtob-I-k-Mp.png)
+
+#### Deposit Ether/ERC20 to smart contract
+
+Our decentralized smart contract on Ethereum performs two pretty simple functions in the aforementioned deposit process — one for Ether and one for ERC20.
+
+```js
+function deposit(string memory incognitoAddress) public payable {
+        require(msg.value + address(this).balance <= 10 ** 27);
+        emit Deposit(ETH_TOKEN, incognitoAddress, msg.value);
+}
+
+function depositERC20(address token, uint amount, string memory incognitoAddress) public payable {
+        IERC20 erc20Interface = IERC20(token);
+        uint tokenBalance = erc20Interface.balanceOf(address(this));
+        require(amount + tokenBalance <= 10 ** 18);
+        require(erc20Interface.transferFrom(msg.sender, address(this), amount));
+        emit Deposit(token, incognitoAddress, amount);
+}
+```
+
+When those functions are called, two important pieces of information (incognito address and deposit amount) will be logged in anticipation of the related transactions being confirmed on the Ethereum network. In the following section, we explain how we use this information in minting private tokens.
+
+#### Verify deposit proof
+
+After the deposit transaction has been confirmed on the Ethereum chain, the proof can be obtained and a special transaction containing that proof can be submitted to the Incognito chain for verification, in order to mint the corresponding private tokens. The metadata of this special transaction contains the following fields:
+
+* Incognito private token id
+* Ethereum block hash
+* Ethereum transaction index
+* Merkle path (or proof) for a receipt relating to the deposit transaction in the Ethereum block
+
+In order to verify the validity of an Ethereum proof on Incognito, we need to:
+
+* (1) Make sure that each Incognito node maintains a valid Ethereum header chain.
+* (2) Verify the validity of the proof (receipt’s Merkle path) with Ethereum header’s receipts root field (Merkle root). This is made possible via a receipt Trie (a special Ethereum data structure) from all receipts of transactions in a block.
+
+Since Ethereum’s consensus is Proof of Work, here are some ways to achieve (1):
+
+- (a) Someone continuously relays Ethereum headers into Incognito and Incognito itself calculates the proof-of-work difficulty of the header and maintains a tree of all submitted headers. A block header is valid if it resides on the longest branch of the tree (a.k.a longest chain)
+- (b) Each Incognito validator node keeps a popular Ethereum light node (e.g. Parity or Geth). That light node also continuously syncs, verifies the proof-of-work difficulty and resolves the fork situation of block headers in a similar way to (1a)
+
+In either (1a) or (1b), Incognito must obtain a valid Ethereum header in order to support the verification in (3). The team opted for (1b), a solution sufficient for moving forward based on the following assumption: as long as at least ⅓ of the number of validators in the Incognito committee run honest Ethereum light nodes, all is well. A transaction may only be comprised when when a malicious Ethereum light node is run by at least (⅔ + 1) of the number of validators. (Note: Incognito’s consensus is Proof of Stake)
+
+The verification process is illustrated in the following figure.
+
+![Verify an Ethereum Deposit](https://i.postimg.cc/6pcpsPyK/0-Ut1-GXHQ36-DFJYs-Pj.png)
+
+#### Mint private tokens
+
+Along with the verification of Merkle path, the aforementioned process also extracts the content of the receipt belonging to a deposit transaction. From that receipt, the required information (incognito address and deposit amount) can be parsed for minting private tokens.
+In other words, both deposit amount and incognito address of the receiver are stored in the proof so that no one can obtain the proof, do a front-running attack or steal any private tokens.
+
+### Incognito ➔ Ethereum
+
+Withdrawing is the process of converting pETH (or pERC20) on Incognito to ETH (or ERC20) on Ethereum. On Ethereum, assets (ETH and ERC20) are held in a smart contract called the Incognito Vault. When someone wants to withdraw their tokens back to the main Ethereum blockchain, they need to supply the Incognito Vault with proof that sufficient tokens have been burned (i.e. destroyed) on Incognito. The private asset must be burned to maintain the 1:1 peg between the private asset on Incognito and the base asset.
+
+The following diagram shows the whole process.
+
+![Incognito to Ethereum](https://i.postimg.cc/cHwqWKX3/0-f-VP7-HNv8p-Blt-XQh-F.png)
+
+#### Burn private tokens
+
+At any time, users can create a special transaction on Incognito called BurningRequest to initiate the withdrawal process. This tx sends an arbitrary amount of private tokens to the BurningAddress. Assets locked in this address cannot be moved, effectively destroying them. Along with the number of tokens to be withdrawn, users also provide a valid receiving address for the corresponding asset on Ethereum.
+
+```go
+type BurningRequest struct {
+        BurnerAddress privacy.PaymentAddress
+        BurningAmount uint64 
+        TokenID       common.Hash
+        TokenName     string
+        RemoteAddress string
+        MetadataBase
+}
+```
+
+Here, TokenID is the private token id on Incognito chain, which will be used to derive the corresponding Ethereum asset (ETH or ERC20 contract address). RemoteAddress is the aforementioned address that will receive the Ethereum asset.
+
+The tx is then mined and instructions generated and stored in the same block. This instruction will be included in a **Burn Proof**, a cryptographic proof (signed by Incognito’s validators) that someone destroyed some amount of private tokens. Since the proof is stored onchain, it is viewable for anyone wishing to assess validity. The amount and token receiver (on Ethereum) is stored in the proof so that again, no one can get your proof, do a front-running attack and steal your tokens.
+
+The proof is only considered valid when more than ⅔ of the current number of validators have signed it. On the Ethereum side, the list of validators is stored and continually updated to mirror Incognito’s.
+
+The full code of BurningRequest tx can be found here: https://github.com/levietcuong2602/incognito-chain/blob/master/metadata/burningrequest.go
+
+#### Withdraw tokens with burn proof
+
+After a burn proof has been generated, it can be obtained from the Incognito chain and submitted to the Vault contract. The proof contains the following metadata (burn instruction in the diagram below):
+
+* Type of token to withdraw (ETH or ERC20 address)
+* Amount of token
+* Token receiving address
+
+Additionally, the contract also needs to verify that this proof is valid and signed by Incognito’s validators. We can split this into 3 steps:
+
+* Verify that the burn instruction is in a merkle tree with some root X
+* Merkle tree with root X is in a block with block hash Y
+* Validators signed block Y
+
+These steps are illustrated in the diagram below.
+
+![Burn Proof](https://i.postimg.cc/1zDcdX2V/0-f-QAcg-LYYt-Kz-6-XIx.png)
+
+The code below shows the first step: verifying that the instruction (with hash instHash) is in merkle tree (with root instRoot), given the merkle path (instPath).
+
+```js
+require(instructionInMerkleTree(
+        instHash,
+        instRoot,
+        instPath,
+        instPathIsLeft
+));
+```
+
+For the 2nd step, we need to recompute the hash of the block. On Incognito, block hash is computed by hashing the root of the merkle tree (storing all instructions) with the hash of the block body (containing all transactions). With this data, the contract can easily verify that merkle root X is in a block with hash Y.
+
+```js
+bytes32 blk = keccak256(abi.encodePacked(keccak256(abi.encodePacked(blkData, instRoot)))); 
+```
+
+Finally, the aggregated signature helps to prove that block hash Y has been approved by a group of validators Z. Note that since the contract already stores validator public keys, there is no need to provide them when validating a burn proof. The code below shows how we check if a sufficient number of validators (at least ⅔ + 1) signed the block.
+
+```js
+if (sigIdx.length <= signers.length * 2 / 3) {
+        return false;
+}
+
+require(verifySig(signers, blk, sigV, sigR, sigS));
+```
+
+The Incognito Vault contract is open-source here: https://github.com/incognitochain/bridge-eth/blob/master/bridge/contracts/vault.sol
+
+#### Withdraw example on Kovan
+
+We deployed the Incognito Vault contract on Ethereum’s Kovan testnet and configured it with the committee from the Incognito testnet (https://test-explorer.incognito.org/). The contract can be seen here.
+
+As an example, we deposited some tokens (with this tx) to the Vault and withdrew some of it by providing a burn proof (in this tx). To obtain this proof, we simply need to make an RPC call to an Incognito fullnode (http://test-node.incognito.org/). The result of the RPC call can be viewed here and is partly shown in the image below.
+
+![Kovan view](https://i.postimg.cc/1z6PmYz4/0-9-NILdi-EJa-Es-KYlw2.png)
+
+#### Swapping committee
+
+We have left an important question unanswered so far: Incognito’s validators change all the time, how can the Incognito Vault smart contract keep track of them?
+
+This is fairly simple to do by utilizing the tools discussed above. Every time a new validator joins the list or an existing one is removed (swapped), they collectively create and sign a SwapConfirm instruction. This instruction stores the pubkey of all validators and is validated in the exact same way as a burn instruction. Each committee effectively “hands over” to the next, and the chain of instructions ensure the list of validators is correct.
+
+The following diagram illustrates this process.
+
+![Swap committee](https://i.postimg.cc/qBQrvKpc/0-H3zy-J-DT5-I-F7-YSX.png)
+
+### Conclusion
+
+Once the bridge is officially released along with the Incognito mainnet (scheduled for end October 2019), Ethereum users will be able to explore some really cool features we’re excited about — privacy and high-throughput among others. We’re looking forward to it and hope you are too.
+
+In the meantime, please feel free to cross the bridge and play around with sending your testnet ETH/ERC20 tokens privately. The MVP wallet app is available for iOS and Android.
+
+Do drop us any questions, comments and feedback — we’re always glad to hear them.
+
+---
+
+## Block finality
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+### System Assumption
+* 	There are 2/3+1 correctness members in the committee
+*	Member can be online/offline, disconnect, or timeout
+### Goal
+*	Safety: block is proposed by a correctness validator and all validator agree on it
+*	Liveness: all correctness validators decide finality block
+*	Non-blocking: validators keep producing & adding new blocks into chain if more than 2/3 correct  are working
+### PBFT in general
+![Picture1](https://user-images.githubusercontent.com/37530661/67836086-3d724380-fb1e-11e9-9b89-6576cdff1060.png)
+PROPOSE PHASE
+A proposer proposes a block, and broadcast to validator
+
+VOTE PHASE
+Each validator validate and broadcast its vote for the block
+
+COMMIT PHASE
+If a validator or proposer collects enough 2/3+1 votes, it commits on the block
+
+#### Finality property
+
+A block is finality means that it is voted by more than 2/3 validators and irreversible.
+
+### State transition of a committee member
+
+ 
+![Screen Shot 2019-10-30 at 14 08 06](https://user-images.githubusercontent.com/37530661/67836275-c25d5d00-fb1e-11e9-91e7-0ec6a230b59f.png)
+
+A committee member maybe in one of the states {New, Wait, Abort, Commit}
+
+Concurrency set: Let si denote the state of the committee member i. The set of all the states that may be concurrent with it is concurrency set (C(si)).
+
+We assume the time is synced by all committee members. 
+*	This means that when a member is in Waiting state the other maybe in {Waiting, Commit} state, it cannot be in Abort state due to time out. 
+*	When a member in is Abort state the other member maybe in {Abort, Commit} state.
+
+**Lemma 1.** *If the concurrency set of a validator has both abort and commit state. Then some validators may commit and the other may abort.*
+
+*Proof*: On a proposed block, some validators get enough votes will go to commit. The other get time out will go to abort. 
+
+**Claim 1**. *In case the proposer is fixed and correctness, the chain can get finality on block n iff the proposer commit on block n.*
+
+*Proof*: when a proposer commit on block n, i.e. it collected > 2/3 votes, but validator may commit or abort on block n (see Lemma 1).  However, when proposer proposes block n+1, validators which have aborted block n could download and finalize block n. In case proposer is byzantine, it proposes an invalid block, it cannot collect enough 2/3 votes in order to commit the block.
+
+In practice, the fixed proposer may cause the chain blocked when proposer crash or it’s byzantine.  To overcome this issue, rotation proposer role in committee is a popular solution.
+
+**Claim 2**. *In case proposer is rotated, a committee member can commit two different blocks at the same height, i.e. the chain is forked.*
+Proof: 1. let proposer A propose block A_n at height n, more than 2/3 committee members vote for this block but only few nodes collected enough votes. Then, in the next time slot, proposer B proposes block B_n at height n, since the majority of committee members have not commit on block A_n, they again vote for B_n. Some of committee members which already committed on block A_n could again collect more than 2/3 votes and commit on block B_n.
+
+*Discussion*
+To avoid fork chain:
+*	Option 1. A validator can only vote 1 block at a specific height. This could lead to deadlock case. E.g. firstly 1/2 validators voted for block A_n at height n, this block is not committed due to lack of votes. Lately, another ½ validators, which don’t know about block A_n, vote for block B_n at height n too. None of proposed blocks get committed, the chain get blocked.
+*	Option 2. A validator can vote for more than 1 block at a specific height. This again lead to fork chain. See proof of Lemma 2.
+
+**Claim 3**. *A node with two forked chains, if one chain is one block longer than the other, then it cannot ensure the longer chain is the finalized chain.*
+
+*Proof*:
+
+![Screen Shot 2019-10-30 at 14 28 36](https://user-images.githubusercontent.com/37530661/67837455-a27b6880-fb21-11e9-902f-8031d27bdead.png)
+
+Fig 1. One chain is one-block longer than the other
+
+![Screen Shot 2019-10-30 at 14 28 57](https://user-images.githubusercontent.com/37530661/67837525-d35b9d80-fb21-11e9-8b88-6d2830520b08.png)
+
+Fig 2. Two chains are equal in length
+
+Assume a node is in the state as Fig 1. While, the majority group of nodes may in state as in Fig 2.
+At this state, nodes may vote for a proposed block B’(n+2) which appended to B’(n+1). This means some node will get the forked chain with two blocks each chain. 
+
+*Discussion*: to avoid block added to multiple fork chains, one can set the rule that if a node voted for a block at one forked chain, then not to vote for any other block at any other chain. However, the chain may get deadlock as option 1 in the proof of Claim 2.
+
+**Claim 4**. *In the worst case, two forked chains may grow to infinity.*
+
+Let N be the size of committee.
+
+Let consider the case that network is highly congested, a major group, >=(2/3)N, failed to propose new block but can receive new block, vote for it, but not collect enough votes to commit the block. While a smaller group, <(1/3)N, can commit and propose new blocks. Moreover, this  group is divided into two forked chains. The next proposer is alternatively picked from each forked chain. In this case, the two forked chains can produce block and append to it chain continuously.
+
+**Claim 5.**  *In rotated proposer mode, a node with two forked chains, there is one chain is one-block longer than the other as in Fig 1, then the chain can not be blocked if the note is not vote for the shorter chain.*
+
+*Proof*: we will proof that the chain will not be blocked, even nodes do not vote for some old blocks.
+*	If only a minor group of nodes is in this state, then the major group (as in Fig2) could produce block on the shorter chain without blocking.
+*	If > 1/3 nodes are in this state (Fig1), both group in state as in Fig 1. and Fig 2. cannot make progress alone. But when one propose the new block with new height B(n+3), nodes in the state of shorter chain (Fig 2) could update the longer chain and vote for it.
+
+**Claim 6.** *A node with two forked chains, if one chain is two-block longer than the other, then the shorter chain will be obsoleted.*
+
+*Proof*: 
+![Screen Shot 2019-10-30 at 14 35 50](https://user-images.githubusercontent.com/37530661/67837860-98a63500-fb22-11e9-8487-45b614a4cfc7.png)
+Pic 3. One chain is two-block longer than the other
+
+If a node commits on block B(n+3), this means majority have committed on block B(n+2). Then majority won’t vote for any block B’(n+2).  As a result, the shorter chain will be obsoleted.
+
+###  Rules for vote and propose a block
+
+As above analysis, the chain can be blocked or be forked. For forked case, the consensus could process the blockchain base on the rule of longer chain.
+
+General rules: 
+*	Avoid to propose multiple block at the same height
+*	Follow the longest chain
+![Screen Shot 2019-10-30 at 14 54 02](https://user-images.githubusercontent.com/37530661/67839288-e2444f00-fb25-11e9-9140-45be8551fe61.png)
+![Screen Shot 2019-10-30 at 14 54 58](https://user-images.githubusercontent.com/37530661/67839312-ee301100-fb25-11e9-87ce-684a803199d8.png)
+![Screen Shot 2019-10-30 at 14 55 22](https://user-images.githubusercontent.com/37530661/67839323-f720e280-fb25-11e9-8bc5-dcee2b45f10e.png)
+
+#### Analysis
+
+Let N be the size of committee.
+
+The worst case scenario is as in **Claim 4**.
+
+The proposers must in minor group (<= 1/3 N), only this minor group can propose and commit on new block. 
+This group is divided into two smaller groups, called A & , each one have (1/6)N members, which holds chain A and B, respectively. 
+
+The probability that a proposer be in group A or B is 1/6.
+The probability that the chain is forked into two chains with length 1-block per chain is 1/6.
+The probability that the chain is forked into two chains with length 2-block per chain is satisfied:
+* 	The first block forked, probability 1/6 
+* 	The next block proposer is in small group, probability 1/6
+* 	The next block proposer is on the other chain, probability 1/2
+Thus, this case happens with probability (1/6)*(1/2)*(1/6) = (1/6) * (1/12)
+
+Generally, the probability that the chain is forked into two chains with length n-block per chain is:  (1/6)*(1/12)^n.
+
+---
+
+## Transaction fees
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+**Designers:** @0xankylosaurus, @0xmerman @duyhtq
+
+**Developers:** @0xankylosaurus, @0xmerman
+
+This document details how transaction fees work in Incognito.
+
+### Pay in PRV
+
+When you make a transaction on Incognito, you set your own transaction fee - how much you're willing to pay for that transaction. The higher the transaction fee is, the earlier your transaction will be processed by validators.
+
+Transaction fees are required to avoid flood attacks and compensate validators for maintaining the network.
+
+The MIN_TX_FEE is 1 NANO (0.000000001 PRV).
+
+### Pay in pToken
+
+Incognito lets you pay for transaction fees in the same tokens you're sending. This is great UX because you don't have to carry the native token, PRV, to pay for the transaction fees.
+
+Incognito implements this via the in-built Incognito Decentralized Exchange (Incognito DEX).  Incognito DEX is used as an oracle price feed of PRV/pToken to calculate how much pToken is needed for transaction fees. Note that Incognito DEX is solely used as an oracle price feed, there is no token swap between PRV and pToken on Incognito DEX.
+
+Here is an example of how it works:
+
+1. Alice is sending 1000 pDAI to Bob.
+
+2. Alice sets the transaction fee she's willing to pay as 3 pDAI.
+
+3. Validators get the exchange rate R of PRV/pDAI from Incognito DEX.
+
+   * If R is not available, the transaction is rejected. *The reasoning is that there is a slight chance that pDAI is worthless on the Incognito network and it's not fair to pass the risk onto validators. The users can always choose to pay in PRV*.
+
+   * If R is available,
+
+     * If 3 pDAI * R < MIN_TX_FEE, the transaction is rejected. *The reasoning is that 3 pDAI does not meet the minimum transaction fee requirement*.
+
+     * If 3 pDAI * R >= MIN_TX_FEE, the transaction passes the minimum transaction fee validation.
+
+### Issues
+
+#### PRV/pToken exchange rate fluctuation
+
+There is a time lag between when the user sends the transaction into the network and when the validators actually receives their pToken. While there is a risk that pToken value goes down during that window, because transaction fees collected during the time lag are relatively small, we feel that the risk is acceptable.
+
+#### pToken liquidity
+
+Similar to the above issue, pToken could be a lot less liquid by the time validators receive their pToken earnings. Because transaction fees collected during the time lag are relatively small, we feel that the risk is acceptable.
+
+---
+
+## DEX, first design
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+**Designers:** @0xankylosaurus, @0xgazeka, @hieu013, @duyhtq
+
+**Developers:** @0xankylosaurus
+
+### Introduction
+
+The first generation of exchanges includes centralized exchanges like Binance and Coinbase. The second generation of exchanges comprises of decentralized exchanges (DEX) like Bancor, Kyber, and Uniswap. pDEX is an upgraded DEX. Like decentralized exchanges, it is trustless. It also implements additional features such as privacy via zero-knowledge proofs, high throughput via sharding, low latency via automated market making, and inter-blockchain trading via interoperable bridges.
+
+|                   | DEX   | pDEX  |
+| ---------         | ------| --    |
+| Trustless         | YES   | YES   |
+| Privacy           | NO    | YES   |
+| High throughput   | NO    | YES   |
+| Inter-blockchain  | NO    | YES   |
+
+### Trustless 
+
+pDEX is code ([beaconpdeproducer.go](https://github.com/levietcuong2602/incognito-chain/blob/dev/master/blockchain/beaconpdeproducer.go), [beaconpdeprocess.go](https://github.com/levietcuong2602/incognito-chain/blob/dev/master/blockchain/beaconpdeprocess.go)) that is deployed to thousands of Nodes powering the Incognito network. It runs entirely on-chain and is completely decentralized.
+
+It takes some time to get used to the Automated Market Making mechanism of pDEX. But once you understand it, you'll see that it has some major advantages over traditional exchanges. pDEX borrows heavily from Nick Johnson's [reddit post](https://www.reddit.com/r/ethereum/comments/54l32y/euler_the_simplest_exchange_and_currency/) in 2016, Vitalik Buterin's [reddit post](https://www.reddit.com/r/ethereum/comments/55m04x/lets_run_onchain_decentralized_exchanges_the_way/) in 2016, Hayden Adam's [Uniswap implementation](https://github.com/Uniswap/contracts-vyper/blob/master/contracts/uniswap_exchange.vy) in 2018. 
+
+pDEX does not use an order book.  Instead, it implements a novel Automated Market Making algorithm that provides instant matching, no matter how large the order size is or how tiny the liquidity pool is.  
+
+#### How to trade on pDEX?
+
+The main idea is to replace the traditional order book with a bonding curve mechanism known as constant product. On a typical exchange such as Coinbase or Binance, market makers supply liquidity at various price points. pDEX takes everyone's bids and asks and pool them into two giant buckets. Market makers no longer specify at which prices they are willing to buy or sell. Instead, pDEX automatically makes markets based on a [Automated Market Making algorithm](https://github.com/runtimeverification/verified-smart-contracts/blob/uniswap/uniswap/x-y-k.pdf). 
+
+[![1-gh35s-RDa-Nmn-VY7-S5avb42-A.png](https://i.postimg.cc/sfKZK5sv/1-gh35s-RDa-Nmn-VY7-S5avb42-A.png)](https://postimg.cc/V5r6krS8)
+
+Let's go through a simple example. There are 100,000 pDAI and 10 pBTC currently in the pDAI/pBTC pool. No matter how much trading activity occurs, the goal is to keep this product equal to 1,000,000.
+
+```
+pDAI pool   : 100,000
+pBTC pool   : 10
+Constant    : 10 * 100,000 = 1,000,000
+```
+
+A buyer sends 10,000 pDAI to buy pBTC. A fee (in this example, 0.1% or 10 pDAI) is taken out for the liquidity providers, and the remaining 9,990 is added to the pDAI pool. The constant product is divided by the new amount of pDAI in the liquidity pool to determine the new pBTC pool. The buyer receives the remaining pBTC.
+
+```
+Buyer sends : 10,000 pDAI
+Fee         : 10,000 * 0.1% = 10 pDAI
+pDAI pool   : 100,000 + 10,000 - 10 = 109,990
+pBTC pool   : 1,000,000 / 109,990 = 9.091735
+Buyer gets  : 10 - 9.091735 = 0.908254 pBTC
+```
+
+Note that:
+
+* The fee is added to the liquidity pool. pDAI pool is now 109,990 + 10 = 110,000. Liquidity providers collect fees when they exit the pool.
+
+* Because the fee is added, the Constant slightly increases after each trade. In this example, it is now 110,000 * 9.091735 = 1,000,090.85
+
+* The price has shifted. If a buyer makes a trade in the same direction, they will get a slightly worse pBTC/pDAI rate. However, if a buyer makes a trade in the opposite direction, they will get a slightly better pDAI/pBTC rate.
+
+#### How to become a liquidity provider and earn trading fees?
+
+Liquidity providers play an essential role in pDEX. They provide liquidity to various pools on pDEX and earn trading fees.
+
+Let's walk through it. In our example above, there are 100,000 pDAI and 10 pBTC. The ratio represents the price of the trading pair on pDEX: 100,000 pDAI / 10 pBTC = 10,000. If the price of BTC on another exchange (say, Binance) is not 10,000, there would be an arbitrage opportunity between pDEX and Binance.
+
+The ratio between pDAI and pBTC should be maintained. Therefore, liquidity providers must provide liquidity to both sides of the pair. For example, if Alice wants to supply 1 pBTC, she must also supply 10,000 pDAI.
+
+pDEX records liquidity contribution by issuing shares representing ownership of the liquidity provider in the pool. In our example, Alice owns 9.09% of the pool. Not only this represents what she contributes, but it also includes her earning: 9.09% of the total trading fees the pool has been making.
+
+```
+Alice supplies  : 10,000 pDAI and 1 pBTC
+pDAI pool       : 100,000 + 10,000 = 110,000
+pBTC pool       : 10 + 1 = 11
+Alice owns      : 1 pBTC / 11 pBTC = 9.09% of the pool
+```
+
+#### Trading fees 
+
+Here is how it works:
+
+1. The users set their own trading fees.  
+
+2. Block producers sort orders by Trading FeeTrade Amount ratio, from highest to lowest, and process orders one by one.
+
+3. The trading fees go directly to liquidity providers.
+
+Unlike other exchanges which offer fixed trading fee structures, pDEX gives users complete control on how they want to set their trading fees.  It’s entirely market-driven.  The higher you set your trading fees, the more likely your orders will be processed first at the prices you want.  The lower you set your trading fees, you’ll pay less but your orders will be more likely to fail due to price movements.
+
+Unlike other exchanges which take all of the trading fees, on pDEX, the entirety of trading fees go directly to the liquidity providers.
+
+We think that it’s a fairer way to build a crypto exchange. 
+
+### Inter-Blockchain Liquidity
+
+pDEX leverages Incognito's bridges to the other blockchains - like Ethereum and Bitcoin - to enable inter-blockchain trading. So you can trade BTC and ERC20 tokens privately on pDEX.
+
+![](https://i.postimg.cc/cHBQGfcK/image.png)
+
+As of November 2019, the [Incognito <> Ethereum Bridge](https://github.com/incognitochain/bridge-eth) is the only trustless bridge on the Mainnet. Other bridges are trusted and will migrate to a trustless implementation in early 2020.
+
+| Bridges | Current Implementation | 
+| --------- | ----------- | 
+| Ethereum <> Incognito       | Trustless |
+| Bitcoin <> Incognito      | Trusted (Going trustless Q1 2020) |
+| Binance <> Incognito       | Trusted (Going trustless Q1 2020) | 
+| EOS <> Incognito       | Trusted (Going trustless Q2 2020) | 
+
+### Privacy
+
+The solution for privacy is relatively simple. Within the Incognito Wallet, there is a unique address reserved for pDEX activities.  Each user has a pDEX address. A user can transfer funds from any address to the pDEX address.  This transfer is private by default on the Incognito network. No one can see the connection between the sending address and the pDEX address.
+
+Once the pDEX address is funded, the user can freely trade without disclosing their identity.
+
+### High Throughput
+
+pDEX leverages Incognito's sharded architecture to deliver high throughput. The workload is shared among shards.  Trades are processed in parallel.  Incognito's throughput scales linearly by adding more shards, so it can continue to grow to support large transaction volume.
+
+![](https://camo.githubusercontent.com/906df0b49559cb1cef57655b94379f7acb9175ff/68747470733a2f2f692e706f7374696d672e63632f6e72767157597a7a2f302d4c727462712d5233726d2d4c61757265642d4e2e706e67)
+
+One of benefits of Automated Market Making is **instant matching**. If you enter an order, it will match right away. The current block time of Incognito is 40s. Once the block is produced on a shard, it is sent to the beacon chain, which takes another 40s. A trade will complete within 80s. Incognito plans to reduce the block time to 10s, once transaction size is further optimized.
+
+### Conclusion
+
+Not just being trustless, pDEX combines several advanced technologies like zero-knowledge proofs for privacy, sharding for high throughput and interoperable bridges for inter-blockchain trading. We hope that it could be a helpful product for the crypto community.
+
+---
+
+## Committee rotation
+
+:::note Inherited from Incognito Chain
+Written by the Incognito Core Developers. It describes the design Zephyrium started from; where Zephyrium differs, [Differences from Incognito](/protocol/differences-from-incognito) is authoritative.
+:::
+
+Designers: @0xmerman, @duyhtq, @thaibao-incognito
+
+Developers: @0xmerman
+
+### Design goals
+
+Validator random substitution is an important component to keep the network secure. The design should satisfy these system goals.
+
+* **Randomness**. Randomness is a crucial building block to avoid the validators being compromised.
+
+* **Liveliness**. The substitutions should not violate the consensus engine.
+
+* **Data availability**. New validators should have complete block data to start working with existing validators right away.
+
+* **Bandwidth**.  The substitutions should not significantly increase the message throughput peer connections.
+
+Additionally, for the validator's own benefits, this design should also consider these user goals.
+
+* **Idle time**. The shorter a user has to wait to become a validator, the better the validator experience is. It's also more efficient to make use of their capital.
+
+* **Staking amount**. The smaller the staking amount is, as long as the system is still secure, the better it is for the majority of the users of the network.
+
+### Code change notes
+
+The implementation will mostly affect only the beacon chain. The code for the beacon chain is in the [blockchain](https://github.com/levietcuong2602/incognito-chain/tree/master/blockchain) package.
+
+### The parameters
+
+Parameter fine-tuning is an important part of Incognito mechanism design. Parameter fine-tuning responsibility is initially handled by the core team, but will be and gradually transferred to the community once self-governance is implemented in early 2020.
+
+| Parameter | Description |
+| --------- | ----------- |
+| X       | the required staking amount |
+| N       | the number of shards |
+| M       | the maximum number of validators per shards |
+| K       | the maximum number of substitutions per shard in an epoch |
+| P       | the maximum number of substitutes per shard |
+| T       | the number of blocks in an epoch |
+| A       | the ratio between substitutes and substitutions |
+
+### The validator role
+
+The Incognito blockchain is composed of N+1 subchains: 1 beacon subchain and N shard subchains.
+
+![](https://i.postimg.cc/nrvqWYzz/0-Lrtbq-R3rm-Laured-N.png)
+
+Each subchain is a Proof-of-Stake blockchain with its own committee of M validators.
+
+* The validators produce new blocks via a Practical Byzantine Fault Tolerance (pBFT) consensus algorithm.
+
+* Via a round-robin setup, each validator takes turns to become the block producer and proposes a new block to the committee. If at least (2/3)*M+1 validators confirm the validity of the block, the block will be added to the subchain.
+
+* Every epoch (or T blocks), the committee will be shuffled. K random validators in the current committee will be substituted by new validators.
+
+### The life cycle of a validator
+
+The life cycle of a validator is as follow:
+
+1. The **user** stakes X amount of PRV to become a candidate.
+
+2. The **candidate** is randomly selected to become a substitute for a specific shard S.
+
+   * If the number of current substitutes is less than P, the candidate automatically becomes a new substitute for shard S.
+
+   * Otherwise, the candidate will wait until the next epoch for the next random selection.
+
+3. The **substitute** must sync all block data of shard S in advance.
+
+   * If the number of current validators in shard S is less than M, the substitute automatically becomes a new validator for shard S at the next epoch.
+
+   * Otherwise, the substitute will replace an existing validator in shard S at the next epoch.
+
+4. The **new validator** starts producing blocks for shard S.
+
+5. The **ex-validator** becomes a normal user and can manually stake again (go back to step 1). Note that there is an "auto re-stake" option for validators who don't want to manually re-stake.
+
+![Incognito Validator Life Cycle](https://i.postimg.cc/KcCZ1cVf/image.png)
+
+### What should be the value of K?
+
+Because Incognito implements pBFT, it requires at least (2/3)*M+1 honest validators in a shard at all time. If we make too many substitutions at a time, it may significantly reduce the security of the shard.
+
+The initial value of K is set as (1/10)*M.
+
+### What should be the value of P?
+
+Because there are K substitutions per shard every epoch, P can't be smaller than K.
+
+Additionally, we feel that there should be a buffer so that in case a substitute is offline or some substitutes need more time to complete block data syncing.
+
+P = A*K
+
+The initial value of A is set as 2.
+
+### Future work
+
+#### Weighted random selection
+
+Weighted random selection could further improve the design. We will explore various weighting mechanisms such as reputation-based (the number of blocks a validator has produced)or time-based (how long has a candidate been waiting to become a validator).
+
+#### Random substitution
+
+While the current solution select substitutes randomly from the candidate pool, the existing validators are being replaced as first-in first-out. Random substitution could further improve the design by selecting existing validators randomly.
+
+A side note, this design could hurt validator experience as a user had been waiting for 10 epochs, just started working for 1 epoch, and now is being substituted. One idea is to set a threshold H so that only validators who work more than H epochs are part of the random substitution.
+
+---
+
+## Changelog
+
+Changes made by Zephyrium to the code inherited from Incognito Chain. Newest first.
+
+### 2026-10-12
+
+- Renamed the project to Zephyrium and the coin to ZEP. The Go module is `github.com/zephyrium/zephyrium-chain`.
+- Devnet scripts read validator keys from the uncommitted secrets file; the highway creates its own network identity on start.
+- Removed inherited scripts and files that carried upstream test keys.
+- Reorganised the documentation: new guides under `docs/`, Incognito's documents kept under `docs/upstream/`, `NOTICE` and credits added.
+
+### 2026-10-11
+
+- ZEP minting schedule: 1,000,000,000 hard cap, 21,000,000 at genesis, 979,000,000 minted by blocks over 21 years with a 10% yearly decrease.
+- Every block reward is split 309/330/330/10 (of 979) between validators, finance, DAO and satoshi addresses.
+- The minting cap is counted on-chain from the first block.
+- Genesis coins go to a newly generated treasury key (`utility/gengenesis`).
+- Stake amounts come from config: 21,000 ZEP per shard validator, 210,000 ZEP beacon minimum.
+- Devnet shard committee opened to 7 seats with 5 fixed; beacon committee closed at 4.
+- Highway bundled under `./highway`. Fixed: staked validators could not report their supported features, so they were never seated.
+- Added `tests/devnet/check.py`, a regression check for the local devnet.
+
+### 2026-07-06
+
+- New committee keys generated from fresh randomness (`utility/genzephyriumkeys`), replacing the publicly derivable upstream test keys.
+- Working local devnet launch.
+
+### Before the fork
+
+See [NOTICE](/resources/credits) for the upstream source and commit this fork started from.
+
+---
+
+## Origins and credits
+
+Zephyrium is a fork of Incognito Chain. The privacy transaction system, the sharded proof-of-stake consensus, the DEX and the bridge design were created by the Incognito Core Developers and released under the MIT License.
+
+Zephyrium is an independent project and is not affiliated with or endorsed by the Incognito team.
+
+### Notice
+
+```text
+Zephyrium Chain
+Copyright 2026 The Zephyrium developers
+
+This software is a fork of Incognito Chain.
+
+  Incognito Chain
+  Copyright 2018-2019 The New Internet LLC (The Incognito Core Developers)
+  Licensed under the MIT License; see COPYING.
+
+Source of this fork
+  Chain:   github.com/levietcuong2602/incognito-chain, commit
+           dd6fe3c9aa03d9a252622c7260b03314e963bb15 (2025-04-17), itself a fork
+           of github.com/incognitochain/incognito-chain.
+  Highway: github.com/levietcuong2602/incognito-highway, commit
+           c10814bf8bd20de116c905b49b583deb1302f8a2 (2025-04-17), itself a fork
+           of github.com/incognitochain/incognito-highway. Bundled under
+           ./highway.
+
+Zephyrium is an independent project. It is not affiliated with, endorsed by or
+supported by The New Internet LLC or the Incognito Core Developers. "Incognito"
+is used here only to credit the origin of the code.
+
+Some source files carry their own copyright notices (for example from the Go
+Authors and the DERO Project). Those notices are kept in the files.
+
+Changes made by Zephyrium are listed in CHANGELOG.md and summarised in
+docs/differences-from-incognito.md.
+```
+
+### License
+
+MIT. The original Incognito copyright notice is kept unchanged in the repository's `COPYING` file.
+
+---
+
+## Roadmap
+
+Zephyrium continues the development of the Incognito Chain codebase. The work below is planned; none of it is finished unless the [changelog](/resources/changelog) says so.
+
+### 1. Remove the remaining central keys
+
+- Remove the inherited central issuing key, which can mint new tokens.
+- Remove the single admin key that can change DEX and bridge parameters; set bounds on the parameters that have none.
+- Phase out fixed committee seats so that every seat is held by a staker.
+
+### 2. Strengthen privacy
+
+- Larger rings with decoys chosen to resemble real spending patterns.
+- Hide the token type on every token transfer.
+- Let wallets find their coins without giving a viewing key to a node.
+
+### 3. Replace the highway
+
+- Peer discovery, message gossip and block sync directly between nodes, with no relay in the middle.
+- Hide which node a transaction came from.
+
+### 4. Harden consensus
+
+- Committee randomness that a single block proposer cannot steer.
+- Slashing that burns part of a misbehaving validator's stake.
+
+### 5. Tokenization
+
+- Tokens owned by their issuer, with a public registry entry.
+- Optional per-token auditor key, private distributions to holders, and blocking of specific coins after legal disclosure.
+
+### 6. Research
+
+- A shielded pool, so the anonymity set is every coin on the chain.
+- Zero-knowledge holder credentials and sealed batch-auction swaps.
+
+### Before a public network
+
+A public testnet waits for items 1 to 3. Mainnet additionally waits for item 4 and an external security audit.
+
+---
+
+## ZEP tokenomics
+
+ZEP has a hard cap of 1,000,000,000. 21,000,000 exist at genesis and the remaining 979,000,000 are minted by blocks over 21 years, with each year minting 10% less than the one before.
+
+### The schedule in short
+
+| Setting | Value |
+|---|---|
+| Hard cap | 1,000,000,000 ZEP |
+| At genesis | 21,000,000 ZEP, counted as part of the validators' share |
+| Minted by blocks | 979,000,000 ZEP |
+| Yearly decrease | 10% |
+| Minting years | 21 |
+| Year 1 mint | 109,928,237 ZEP |
+
+### Who receives it
+
+Every block reward is split four ways.
+
+| Share | Of the 1B cap | Of each block reward | Purpose |
+|---|---|---|---|
+| Validators (Security) | 33% | 309 / 979 | Paid to seated beacon and shard validators |
+| Finance | 33% | 330 / 979 | Liquidity and the neobank |
+| DAO | 33% | 330 / 979 | Growth and development |
+| Satoshi | 1% | 10 / 979 | Creators |
+
+Validators receive 309 parts of each block and not 330 because 21,000,000 ZEP of their third is issued at genesis.
+
+### Year by year
+
+All figures are whole ZEP.
+
+| Year | Minted | Validators | Finance | DAO | Satoshi | Total supply |
+|---|---|---|---|---|---|---|
+| Genesis | 21,000,000 | 21,000,000 | 0 | 0 | 0 | 21,000,000 |
+| 1 | 109,928,237 | 34,696,451 | 37,054,462 | 37,054,462 | 1,122,862 | 130,928,237 |
+| 2 | 98,935,414 | 31,226,806 | 33,349,016 | 33,349,016 | 1,010,576 | 229,863,651 |
+| 3 | 89,041,872 | 28,104,125 | 30,014,114 | 30,014,114 | 909,519 | 318,905,523 |
+| 4 | 80,137,686 | 25,293,713 | 27,012,703 | 27,012,703 | 818,567 | 399,043,209 |
+| 5 | 72,123,915 | 22,764,341 | 24,311,432 | 24,311,432 | 736,710 | 471,167,124 |
+| 6 | 64,911,524 | 20,487,907 | 21,880,289 | 21,880,289 | 663,039 | 536,078,648 |
+| 7 | 58,420,371 | 18,439,116 | 19,692,260 | 19,692,260 | 596,735 | 594,499,019 |
+| 8 | 52,578,335 | 16,595,205 | 17,723,034 | 17,723,034 | 537,062 | 647,077,354 |
+| 9 | 47,320,501 | 14,935,684 | 15,950,731 | 15,950,731 | 483,355 | 694,397,855 |
+| 10 | 42,588,452 | 13,442,116 | 14,355,658 | 14,355,658 | 435,020 | 736,986,307 |
+| 11 | 38,329,606 | 12,097,904 | 12,920,092 | 12,920,092 | 391,518 | 775,315,913 |
+| 12 | 34,496,646 | 10,888,114 | 11,628,083 | 11,628,083 | 352,366 | 809,812,559 |
+| 13 | 31,046,982 | 9,799,302 | 10,465,275 | 10,465,275 | 317,130 | 840,859,541 |
+| 14 | 27,942,283 | 8,819,372 | 9,418,747 | 9,418,747 | 285,417 | 868,801,824 |
+| 15 | 25,148,054 | 7,937,435 | 8,476,872 | 8,476,872 | 256,875 | 893,949,878 |
+| 16 | 22,633,249 | 7,143,692 | 7,629,185 | 7,629,185 | 231,187 | 916,583,127 |
+| 17 | 20,369,925 | 6,429,322 | 6,866,267 | 6,866,267 | 208,069 | 936,953,052 |
+| 18 | 18,332,932 | 5,786,390 | 6,179,640 | 6,179,640 | 187,262 | 955,285,984 |
+| 19 | 16,499,639 | 5,207,751 | 5,561,676 | 5,561,676 | 168,536 | 971,785,623 |
+| 20 | 14,849,674 | 4,686,976 | 5,005,508 | 5,005,508 | 151,682 | 986,635,297 |
+| 21 | 13,364,703 | 4,218,278 | 4,504,956 | 4,504,956 | 136,513 | 1,000,000,000 |
+
+### How the chain enforces it
+
+- The block reward, yearly decrease and number of minting years are network settings; see [Network parameters](/validators/network-parameters).
+- The chain counts every minted coin from the first block and stops at 979,000,000.
+- On the devnet the split was checked against these shares after the first epoch; see [Validators and rewards](/validators/overview).
+
+Transaction fees are added to the same pool and split by the same shares.
+
+---
+
+## Network parameters
+
+Zephyrium has one network today, the local devnet, configured in `config/local/`.
+
+| Setting | Devnet value | Key in `param.yaml` |
+|---|---|---|
+| Shards | 1 | `active_shards` |
+| Block interval | 10 seconds | `block_time` |
+| Epoch length | 50 beacon blocks | `epoch_param.number_of_block_in_epoch` |
+| Shard committee | 5 to 7 seats, 5 fixed | `committee_size` |
+| Beacon committee | 4 seats, 4 fixed | `committee_size` |
+| Shard stake | 21,000 ZEP | `staking_amount_shard` |
+| Beacon stake minimum | 210,000 ZEP | `staking_amount_beacon_min` |
+| Block reward | 34.834156126 ZEP per shard block | `basic_reward` |
+| Yearly decrease | 10%, for 21 years | `tokenomics` |
+| Minted by blocks, cap | 979,000,000 ZEP | `max_reward` |
+| Reward shares | 309 / 330 / 330 / 10 | `tokenomics` |
+| Genesis allocation | 21,000,000 ZEP to the treasury key | `init_tx.json` |
+
+Amounts in the config files are in the smallest unit: 1 ZEP = 1,000,000,000 units.
+
+### Notes
+
+- `basic_reward` is per shard block. A network with more shards or a different block interval needs a different value to mint the same yearly total.
+- The committee members at genesis come from `keylist.json`: the first 4 beacon keys and the first 5 keys of shard 0.
+- These are consensus settings. Every node must run the same values, and changing genesis or committee settings requires a new chain.
+- Other folders under `config/` (`mainnet`, `testnet-1`, `testnet-2`) are Incognito's networks, kept for reference. They do not describe a Zephyrium network.
+
+---
+
+## Node types
+
+A wallet talks to a full node. Full nodes pass transactions to shard validators, who put them in blocks. Beacon validators keep the shards in step. Today a highway relays every message between them.
+
+| Node | Stake | What it does | You can run it |
+|---|---|---|---|
+| Full node | None | Keeps a full copy of every chain and answers queries | Yes, on the devnet |
+| Shard validator | 21,000 ZEP | Signs the blocks that carry transactions, tokens and swaps | On the devnet, 2 open seats |
+| Beacon validator | 210,000 ZEP minimum | Coordinates the shards and tracks validators | Not yet; the beacon committee is closed |
+| Highway | None | Relays messages and serves blocks to syncing nodes | Devnet only; being replaced |
+
+### Full node
+
+It downloads and checks every block and answers JSON-RPC requests. It holds no validator key and never signs blocks.
+
+Run your own for independence and privacy: a wallet shares a viewing key with the node it uses, and on your own node that key stays on your machine.
+
+```bash
+./start_node.sh full_node     # RPC on port 9354
+```
+
+### Shard validator
+
+A member of a shard committee. Stake exactly 21,000 ZEP, wait as a candidate, get assigned to a shard at random, sync it, then take a seat when one rotates. Seated validators earn a share of every block reward.
+
+A validator must stay online. One that misses too many signatures loses its seat at the end of the epoch.
+
+```bash
+./start_node.sh shard0-5      # one of the two spare validator nodes on the devnet
+```
+
+### Beacon validator
+
+A member of the beacon committee. Only a key that is already a shard validator can apply. The stake is at least 210,000 ZEP in multiples of 21,000, and auto-restake is always on.
+
+It runs the same program as a shard validator; the beacon staking transaction is what changes its role.
+
+### Highway
+
+A relay server. Nodes do not connect to each other directly today: each one connects to the highway. It creates its own network identity on start and needs no keys to manage.
+
+The [roadmap](/resources/roadmap) replaces it with direct node-to-node networking before any public network.
+
+### What a node needs
+
+Measured on the local devnet, which was nearly idle:
+
+| | Disk growth | Memory at start |
+|---|---|---|
+| Full node | About 14 GB a year with empty blocks | About 50 MB |
+| Validator | About 16 GB a year with empty blocks | About 50 MB |
+
+Transactions add to this. Memory and processor use under real traffic have not been measured yet.
+
+---
+
+## Validators and rewards
+
+The figures are the devnet's settings in `config/local/param.yaml`.
+
+### Becoming a validator
+
+| | Shard validator | Beacon validator |
+|---|---|---|
+| Stake | Exactly 21,000 ZEP | At least 210,000 ZEP, in multiples of 21,000 |
+| Who can apply | Anyone | Only a key that is already a shard validator |
+| Auto-restake | Optional | Always on |
+| Stake returned | When the validator unstakes or loses its seat | Same |
+
+A staking transaction burns the stake and names the validator key. The validator then moves through four stages:
+
+1. **Candidate**: registered, waiting for the next random assignment.
+2. **Syncing**: assigned to a shard, downloading it.
+3. **Pending**: synced and waiting for a seat.
+4. **Committee**: seated, signing blocks and earning.
+
+Rotation happens once per epoch (50 beacon blocks on the devnet, about 8 minutes). A validator that misses too many signatures loses its seat at the end of the epoch. Today it gets its full stake back; burning part of the stake is on the [roadmap](/resources/roadmap).
+
+### Committees on the devnet
+
+| Committee | Seats | Fixed seats | Open to stakers |
+|---|---|---|---|
+| Shard 0 | 7 | 5 | 2 |
+| Beacon | 4 | 4 | 0 |
+
+Fixed seats are never rotated out. A block is final when more than two thirds of the committee sign it.
+
+### Where rewards come from
+
+Each shard block mints 34.834156126 ZEP on the devnet (one shard, 10-second blocks). The amount falls 10% each year and stops after 21 years, for a total of 979,000,000 ZEP minted by blocks. Transaction fees are added to the same pool.
+
+### How a reward is split
+
+| Share | Part of every reward | Paid to |
+|---|---|---|
+| Validators | 309 / 979 (31.56%) | Beacon and shard committees |
+| Finance | 330 / 979 (33.71%) | `finance_address` |
+| DAO | 330 / 979 (33.71%) | `dao_address` |
+| Satoshi | 10 / 979 (1.02%) | `satoshi_address` |
+
+The validator share is 309 and not 330 because 21,000,000 ZEP of the validators' third is issued at genesis.
+
+Within the validator share, the beacon committee receives the share of two shards, and each shard's committee splits the rest equally among its seated members. On a one-shard network this gives the beacon committee two thirds of the validator share. Changing that ratio is an open design question.
+
+Rewards accumulate per address and are claimed with a withdraw-reward transaction.
+
+### Checking it
+
+`python3 tests/devnet/check.py` verifies the split against these shares after the first epoch, and `--stakers` verifies that an outside validator is seated and paid.

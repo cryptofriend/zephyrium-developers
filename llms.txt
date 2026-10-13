@@ -14,7 +14,7 @@ This file contains links to documentation sections following the llmstxt.org sta
 - [iWallet](https://developers.zephyrium.ai/products/iwallet): The browser-extension wallet for Zephyrium.
 - [Changelog](https://developers.zephyrium.ai/resources/changelog): What Zephyrium has changed, by date.
 - [License](https://developers.zephyrium.ai/resources/license): Zephyrium is open-source software under the MIT License.
-- [Roadmap](https://developers.zephyrium.ai/resources/roadmap): Planned work, in order.
+- [Roadmap](https://developers.zephyrium.ai/resources/roadmap): The Zephyrium roadmap is being finalised and will be published soon.
 - [ZEP tokenomics](https://developers.zephyrium.ai/tokenomics/zep): The ZEP supply cap, who receives it, and the 21-year release schedule.
 - [Network parameters](https://developers.zephyrium.ai/validators/network-parameters): Every devnet setting and where it lives.
 - [Node types](https://developers.zephyrium.ai/validators/node-types): The four kinds of node, what each does and what it needs.

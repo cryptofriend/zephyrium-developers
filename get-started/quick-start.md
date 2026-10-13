@@ -33,7 +33,7 @@ Back up `secrets/secrets.json`. It is the only copy of the private keys.
 GO111MODULE=on GOFLAGS=-mod=mod go build -ldflags=-checklinkname=0 -o incognito ./
 ```
 
-The `-ldflags=-checklinkname=0` flag is required with Go 1.24 or newer. The program is still named `incognito`; see [Differences from Incognito](/protocol/differences-from-incognito#names).
+The `-ldflags=-checklinkname=0` flag is required with Go 1.24 or newer.
 
 ## 3. Launch
 

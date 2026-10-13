@@ -2,7 +2,7 @@
 
 > What Zephyrium keeps private, how the chain is structured, and its current limits.
 
-Zephyrium is a layer-1 chain where privacy is the default for transfers. It is a fork of Incognito Chain and uses the same transaction system; see [Credits](/resources/credits).
+Zephyrium is a layer-1 chain where privacy is the default for transfers.
 
 ## What is private
 

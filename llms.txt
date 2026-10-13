@@ -12,17 +12,8 @@ This file contains links to documentation sections following the llmstxt.org sta
 - [iDEX](https://developers.zephyrium.ai/products/idex): The exchange built into the Zephyrium chain.
 - [iTokens](https://developers.zephyrium.ai/products/itokens): Private tokens on Zephyrium.
 - [iWallet](https://developers.zephyrium.ai/products/iwallet): The browser-extension wallet for Zephyrium.
-- [Differences from Incognito](https://developers.zephyrium.ai/protocol/differences-from-incognito): What Zephyrium changed, what it kept, and the naming table.
-- [Architecture](https://developers.zephyrium.ai/protocol/upstream/architecture): Incognito is a privacy-protecting blockchain. It uses peer-to-peer technology to operate with no central authority. Activities and transactions are...
-- [Burn address](https://developers.zephyrium.ai/protocol/upstream/burning-address): * Burn address: is a special address on Incognito chain, which is not accessible by anyone, since no one owns the private keys to that address.
-- [Curve](https://developers.zephyrium.ai/protocol/upstream/edrwards25519): At the first stage of the Incognito project, we use the P-256 ECC library built-in of Golang to implement cryptography protocols. However, the perf...
-- [Ethereum bridge](https://developers.zephyrium.ai/protocol/upstream/ethereum-bridge): Enabling private ETH/ERC20 transactions via a fully decentralized bridge between Incognito and Ethereum
-- [Block finality](https://developers.zephyrium.ai/protocol/upstream/finality-pbft): VOTE PHASE Each validator validate and broadcast its vote for the block
-- [Transaction fees](https://developers.zephyrium.ai/protocol/upstream/min-transaction-fees): **Designers:** @0xankylosaurus, @0xmerman @duyhtq
-- [DEX, first design](https://developers.zephyrium.ai/protocol/upstream/pdex): **Designers:** @0xankylosaurus, @0xgazeka, @hieu013, @duyhtq
-- [Committee rotation](https://developers.zephyrium.ai/protocol/upstream/validator-random-substitution): Designers: @0xmerman, @duyhtq, @thaibao-incognito
 - [Changelog](https://developers.zephyrium.ai/resources/changelog): What Zephyrium has changed, by date.
-- [Origins and credits](https://developers.zephyrium.ai/resources/credits): Zephyrium is a fork of Incognito Chain.
+- [License](https://developers.zephyrium.ai/resources/license): Zephyrium is open-source software under the MIT License.
 - [Roadmap](https://developers.zephyrium.ai/resources/roadmap): Planned work, in order.
 - [ZEP tokenomics](https://developers.zephyrium.ai/tokenomics/zep): The ZEP supply cap, who receives it, and the 21-year release schedule.
 - [Network parameters](https://developers.zephyrium.ai/validators/network-parameters): Every devnet setting and where it lives.

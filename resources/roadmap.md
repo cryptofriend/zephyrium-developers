@@ -2,7 +2,7 @@
 
 > Planned work, in order.
 
-Zephyrium continues the development of the Incognito Chain codebase. The work below is planned; none of it is finished unless the [changelog](/resources/changelog) says so.
+The work below is planned; none of it is finished unless the [changelog](/resources/changelog) says so.
 
 ## 1. Remove the remaining central keys
 

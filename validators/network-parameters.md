@@ -26,4 +26,3 @@ Amounts in the config files are in the smallest unit: 1 ZEP = 1,000,000,000 unit
 - `basic_reward` is per shard block. A network with more shards or a different block interval needs a different value to mint the same yearly total.
 - The committee members at genesis come from `keylist.json`: the first 4 beacon keys and the first 5 keys of shard 0.
 - These are consensus settings. Every node must run the same values, and changing genesis or committee settings requires a new chain.
-- Other folders under `config/` (`mainnet`, `testnet-1`, `testnet-2`) are Incognito's networks, kept for reference. They do not describe a Zephyrium network.

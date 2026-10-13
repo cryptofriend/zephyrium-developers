@@ -8,7 +8,7 @@ This file contains links to documentation sections following the llmstxt.org sta
 
 - [Concepts](https://developers.zephyrium.ai/get-started/concepts): What Zephyrium keeps private, how the chain is structured, and its current limits.
 - [Quick start](https://developers.zephyrium.ai/get-started/quick-start): Build, launch and check a local Zephyrium devnet.
-- [Zephyrium Documentation](https://developers.zephyrium.ai/): Run a node, validate, and build on the Zephyrium privacy chain.
+- [ZEP Documentation](https://developers.zephyrium.ai/): Run a node, validate, and build on the Zephyrium privacy chain.
 - [iDEX](https://developers.zephyrium.ai/products/idex): The exchange built into the Zephyrium chain.
 - [iTokens](https://developers.zephyrium.ai/products/itokens): Private tokens on Zephyrium.
 - [iWallet](https://developers.zephyrium.ai/products/iwallet): The browser-extension wallet for Zephyrium.

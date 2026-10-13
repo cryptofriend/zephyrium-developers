@@ -125,7 +125,7 @@ A reset is required after changing genesis or committee settings. Do not use the
 
 ---
 
-## Zephyrium Documentation
+## ZEP Documentation
 
 import {Hero, QuickStart, CardGrid, Card, UseCases, Pills, Status, CTA} from '@site/src/components/Home';
 

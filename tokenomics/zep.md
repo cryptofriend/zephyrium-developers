@@ -4,8 +4,8 @@
 
 ZEP has a hard cap of 1,000,000,000. 21,000,000 are unlocked at genesis for the ICO, 50,000,000 vest to investors over four years, and the remaining 929,000,000 are released over 21 years, with each year releasing 10% less than the one before.
 
-:::note Release schedule v3.2
-This page describes the planned release schedule. The devnet still runs the earlier reward split described in [Validators and rewards](/validators/overview) until the chain parameters are updated to match.
+:::note On the devnet
+The devnet pays the validator column on-chain, 299 of every 979 ZEP minted, and sends everything else to one foundation wallet. The split between liquidity, foundation, team and investors, the cliffs and the investor vesting are not enforced on-chain yet; see [Validators and rewards](/validators/overview).
 :::
 
 ## The schedule in short

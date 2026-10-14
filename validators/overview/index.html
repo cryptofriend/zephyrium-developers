@@ -6,7 +6,7 @@
 <title data-rh="true">Validators and rewards | Zephyrium Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://developers.zephyrium.ai/validators/overview"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Validators and rewards | Zephyrium Docs"><meta data-rh="true" name="description" content="Stake amounts, how a validator gets a seat, and how rewards are split."><meta data-rh="true" property="og:description" content="Stake amounts, how a validator gets a seat, and how rewards are split."><link data-rh="true" rel="icon" href="/img/zephyrium-logo.svg"><link data-rh="true" rel="canonical" href="https://developers.zephyrium.ai/validators/overview"><link data-rh="true" rel="alternate" href="https://developers.zephyrium.ai/validators/overview" hreflang="en"><link data-rh="true" rel="alternate" href="https://developers.zephyrium.ai/validators/overview" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Overview","item":"https://developers.zephyrium.ai/validators/overview"}]}</script><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"><link rel="stylesheet" href="/assets/css/styles.5cb9b766.css">
-<script src="/assets/js/runtime~main.362493e6.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.2177cca1.js" defer="defer"></script>
 <script src="/assets/js/main.2174cb50.js" defer="defer"></script>
 </head>
 <body>
@@ -103,18 +103,8 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Share</th><th>Part of every reward</th><th>Paid to</th></tr></thead><tbody><tr><td>Validators</td><td>309 / 979 (31.56%)</td><td>Beacon and shard committees</td></tr><tr><td>Finance</td><td>330 / 979 (33.71%)</td><td><code>finance_address</code></td></tr><tr><td>DAO</td><td>330 / 979 (33.71%)</td><td><code>dao_address</code></td></tr><tr><td>Satoshi</td><td>10 / 979 (1.02%)</td><td><code>satoshi_address</code></td></tr></tbody></table>
-<p>The validator share is 309 and not 330 because 21,000,000 ZEP of the validators&#x27; third is issued at genesis.</p>
+<table><thead><tr><th>Share</th><th>Part of every reward</th><th>Paid to</th></tr></thead><tbody><tr><td>Validators</td><td>299 / 979 (30.54%)</td><td>Beacon and shard committees</td></tr><tr><td>Foundation</td><td>680 / 979 (69.46%)</td><td><code>dao_address</code>, the foundation wallet</td></tr></tbody></table>
+<p>The foundation wallet also holds the 21,000,000 ZEP genesis allocation. Over 21 years this gives validators 299,000,000 ZEP and the foundation 701,000,000 ZEP, which the foundation distributes to liquidity, team, contributors and investors off-chain for now; the on-chain cliffs and vesting of the <a href="https://developers.zephyrium.ai/tokenomics/zep" target="_blank" rel="noopener noreferrer" class="">release schedule</a> are planned work.</p>
 <p>Within the validator share, the beacon committee receives the share of two shards, and each shard&#x27;s committee splits the rest equally among its seated members. On a one-shard network this gives the beacon committee two thirds of the validator share. Changing that ratio is an open design question.</p>
 <p>Rewards accumulate per address and are claimed with a withdraw-reward transaction.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="checking-it">Checking it<a href="#checking-it" class="hash-link" aria-label="Direct link to Checking it" title="Direct link to Checking it" translate="no">​</a></h2>

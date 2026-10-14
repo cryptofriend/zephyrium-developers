@@ -23,7 +23,7 @@ cd ..
 GO111MODULE=on GOFLAGS=-mod=mod go run -ldflags=-checklinkname=0 ./utility/gengenesis
 ```
 
-`gengenesis` adds a treasury key and the DAO, finance and satoshi keys to `secrets/secrets.json`, writes `config/local/init_tx.json`, and prints three addresses. Put those addresses into `config/local/param.yaml` as `dao_address`, `finance_address` and `satoshi_address`.
+`gengenesis` adds a foundation key to `secrets/secrets.json`, writes the genesis allocation to `config/local/init_tx.json`, and sets `dao_address` in `config/local/param.yaml` to the foundation address. Nothing to paste by hand.
 
 Back up `secrets/secrets.json`. It is the only copy of the private keys.
 

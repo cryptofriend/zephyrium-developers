@@ -39,12 +39,10 @@ Each shard block mints 34.834156126 ZEP on the devnet (one shard, 10-second bloc
 
 | Share | Part of every reward | Paid to |
 |---|---|---|
-| Validators | 309 / 979 (31.56%) | Beacon and shard committees |
-| Finance | 330 / 979 (33.71%) | `finance_address` |
-| DAO | 330 / 979 (33.71%) | `dao_address` |
-| Satoshi | 10 / 979 (1.02%) | `satoshi_address` |
+| Validators | 299 / 979 (30.54%) | Beacon and shard committees |
+| Foundation | 680 / 979 (69.46%) | `dao_address`, the foundation wallet |
 
-The validator share is 309 and not 330 because 21,000,000 ZEP of the validators' third is issued at genesis.
+The foundation wallet also holds the 21,000,000 ZEP genesis allocation. Over 21 years this gives validators 299,000,000 ZEP and the foundation 701,000,000 ZEP, which the foundation distributes to liquidity, team, contributors and investors off-chain for now; the on-chain cliffs and vesting of the [release schedule](https://developers.zephyrium.ai/tokenomics/zep) are planned work.
 
 Within the validator share, the beacon committee receives the share of two shards, and each shard's committee splits the rest equally among its seated members. On a one-shard network this gives the beacon committee two thirds of the validator share. Changing that ratio is an open design question.
 

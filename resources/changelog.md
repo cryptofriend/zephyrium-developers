@@ -4,6 +4,13 @@
 
 Changes to the Zephyrium chain. Newest first.
 
+## 2026-10-15
+
+- Reward split simplified to the v3.2 release schedule: 299/979 of every block to validators, 680/979 to one foundation wallet (`dao_address`). The finance, DAO and satoshi addresses are gone.
+- The foundation wallet also holds the genesis allocation; `gengenesis` now writes its address into `param.yaml`.
+- `tools/make-devnet-pack.sh` builds a self-contained devnet archive with prebuilt Linux and macOS binaries for launching on another machine.
+- Linux: the pack was launched in a Debian container.
+
 ## 2026-10-12
 
 - Renamed the project to Zephyrium and the coin to ZEP. The Go module is `github.com/zephyrium/zephyrium-chain`.

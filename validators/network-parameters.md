@@ -16,8 +16,9 @@ Zephyrium has one network today, the local devnet, configured in `config/local/`
 | Block reward | 34.834156126 ZEP per shard block | `basic_reward` |
 | Yearly decrease | 10%, for 21 years | `tokenomics` |
 | Minted by blocks, cap | 979,000,000 ZEP | `max_reward` |
-| Reward shares | 309 / 330 / 330 / 10 | `tokenomics` |
-| Genesis allocation | 21,000,000 ZEP to the treasury key | `init_tx.json` |
+| Reward shares | 299 validators / 680 foundation | `tokenomics` |
+| Genesis allocation | 21,000,000 ZEP to the foundation wallet | `init_tx.json` |
+| Foundation wallet | Payment address of the foundation key | `dao_address` |
 
 Amounts in the config files are in the smallest unit: 1 ZEP = 1,000,000,000 units.
 

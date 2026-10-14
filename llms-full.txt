@@ -68,7 +68,7 @@ cd ..
 GO111MODULE=on GOFLAGS=-mod=mod go run -ldflags=-checklinkname=0 ./utility/gengenesis
 ```
 
-`gengenesis` adds a treasury key and the DAO, finance and satoshi keys to `secrets/secrets.json`, writes `config/local/init_tx.json`, and prints three addresses. Put those addresses into `config/local/param.yaml` as `dao_address`, `finance_address` and `satoshi_address`.
+`gengenesis` adds a foundation key to `secrets/secrets.json`, writes the genesis allocation to `config/local/init_tx.json`, and sets `dao_address` in `config/local/param.yaml` to the foundation address. Nothing to paste by hand.
 
 Back up `secrets/secrets.json`. It is the only copy of the private keys.
 
@@ -277,6 +277,13 @@ To find your coins, the wallet registers a **viewing key** with the node it uses
 
 Changes to the Zephyrium chain. Newest first.
 
+### 2026-10-15
+
+- Reward split simplified to the v3.2 release schedule: 299/979 of every block to validators, 680/979 to one foundation wallet (`dao_address`). The finance, DAO and satoshi addresses are gone.
+- The foundation wallet also holds the genesis allocation; `gengenesis` now writes its address into `param.yaml`.
+- `tools/make-devnet-pack.sh` builds a self-contained devnet archive with prebuilt Linux and macOS binaries for launching on another machine.
+- Linux: the pack was launched in a Debian container.
+
 ### 2026-10-12
 
 - Renamed the project to Zephyrium and the coin to ZEP. The Go module is `github.com/zephyrium/zephyrium-chain`.
@@ -325,8 +332,8 @@ Until then, the [changelog](/resources/changelog) lists what has already shipped
 
 ZEP has a hard cap of 1,000,000,000. 21,000,000 are unlocked at genesis for the ICO, 50,000,000 vest to investors over four years, and the remaining 929,000,000 are released over 21 years, with each year releasing 10% less than the one before.
 
-:::note Release schedule v3.2
-This page describes the planned release schedule. The devnet still runs the earlier reward split described in [Validators and rewards](/validators/overview) until the chain parameters are updated to match.
+:::note On the devnet
+The devnet pays the validator column on-chain, 299 of every 979 ZEP minted, and sends everything else to one foundation wallet. The split between liquidity, foundation, team and investors, the cliffs and the investor vesting are not enforced on-chain yet; see [Validators and rewards](/validators/overview).
 :::
 
 ### The schedule in short
@@ -420,8 +427,9 @@ Zephyrium has one network today, the local devnet, configured in `config/local/`
 | Block reward | 34.834156126 ZEP per shard block | `basic_reward` |
 | Yearly decrease | 10%, for 21 years | `tokenomics` |
 | Minted by blocks, cap | 979,000,000 ZEP | `max_reward` |
-| Reward shares | 309 / 330 / 330 / 10 | `tokenomics` |
-| Genesis allocation | 21,000,000 ZEP to the treasury key | `init_tx.json` |
+| Reward shares | 299 validators / 680 foundation | `tokenomics` |
+| Genesis allocation | 21,000,000 ZEP to the foundation wallet | `init_tx.json` |
+| Foundation wallet | Payment address of the foundation key | `dao_address` |
 
 Amounts in the config files are in the smallest unit: 1 ZEP = 1,000,000,000 units.
 
@@ -528,12 +536,10 @@ Each shard block mints 34.834156126 ZEP on the devnet (one shard, 10-second bloc
 
 | Share | Part of every reward | Paid to |
 |---|---|---|
-| Validators | 309 / 979 (31.56%) | Beacon and shard committees |
-| Finance | 330 / 979 (33.71%) | `finance_address` |
-| DAO | 330 / 979 (33.71%) | `dao_address` |
-| Satoshi | 10 / 979 (1.02%) | `satoshi_address` |
+| Validators | 299 / 979 (30.54%) | Beacon and shard committees |
+| Foundation | 680 / 979 (69.46%) | `dao_address`, the foundation wallet |
 
-The validator share is 309 and not 330 because 21,000,000 ZEP of the validators' third is issued at genesis.
+The foundation wallet also holds the 21,000,000 ZEP genesis allocation. Over 21 years this gives validators 299,000,000 ZEP and the foundation 701,000,000 ZEP, which the foundation distributes to liquidity, team, contributors and investors off-chain for now; the on-chain cliffs and vesting of the [release schedule](https://developers.zephyrium.ai/tokenomics/zep) are planned work.
 
 Within the validator share, the beacon committee receives the share of two shards, and each shard's committee splits the rest equally among its seated members. On a one-shard network this gives the beacon committee two thirds of the validator share. Changing that ratio is an open design question.
 

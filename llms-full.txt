@@ -10,7 +10,7 @@ Zephyrium is a layer-1 chain where privacy is the default for transfers.
 
 ### What is private
 
-| | Transfers of ZEP and tokens | Swaps on iDEX | Staking |
+| | Transfers of ZEP and tokens | Swaps on pDEX | Staking |
 |---|---|---|---|
 | Sender | Hidden in a ring of 8 | Hidden in a ring of 8 | Public |
 | Receiver | One-time address | One-time address | Public |
@@ -37,7 +37,7 @@ Three mechanisms do the work:
 These are known and on the [roadmap](/resources/roadmap):
 
 - **Small rings with uniform decoys.** Eight members, chosen without regard to coin age, is weaker than a larger, age-aware ring.
-- **Swap amounts are public.** iDEX hides who trades, not how much or which pair.
+- **Swap amounts are public.** pDEX hides who trades, not how much or which pair.
 - **The highway is a single relay.** It can see which address a transaction came from, and the chain stops if it is down.
 - **Fixed committee seats.** On the devnet, 5 of 7 shard seats and all 4 beacon seats are held by fixed validators.
 - **Wallets share a viewing key with their node.** A wallet registers a viewing key with the node it uses so the node can find its coins.
@@ -157,9 +157,9 @@ Run a node, stake as a validator and build on a privacy chain that hides who pai
 
 ---
 
-## iDEX
+## pDEX
 
-iDEX is an exchange that is part of the chain itself: pools and swaps are handled by the validators, with no separate contract to deploy.
+pDEX is an exchange that is part of the chain itself: pools and swaps are handled by the validators, with no separate contract to deploy.
 
 ### How it works
 
@@ -175,14 +175,14 @@ iDEX is an exchange that is part of the chain itself: pools and swaps are handle
 
 ### What is private, and what is not
 
-| | On iDEX today |
+| | On pDEX today |
 |---|---|
 | Who traded | Hidden: the trade is signed by a ring of 8 |
 | Where the proceeds go | Hidden: a one-time address |
 | Amount sold | **Public** |
 | Token pair | **Public** |
 
-iDEX gives anonymous trades, not confidential ones. Hiding swap amounts is a research item on the [roadmap](/resources/roadmap).
+pDEX gives anonymous trades, not confidential ones. Hiding swap amounts is a research item on the [roadmap](/resources/roadmap).
 
 ### Try it on the devnet
 
@@ -192,27 +192,27 @@ The devnet check creates a test token, adds a ZEP pool for it and swaps 1 ZEP:
 python3 tests/devnet/check.py
 ```
 
-The last line of its output reports the swap, for example `DEX swap: 1 ZEP bought 1.998002 iUSDt`.
+The last line of its output reports the swap, for example `DEX swap: 1 ZEP bought 1.998002 pUSDt`.
 
 ### Names in the code
 
-The code and RPC methods still use the inherited name, `pdex`. The methods you will see are `pdexv3_getState`, `pdexv3_txAddLiquidity` and `pdexv3_txTrade`.
+The RPC methods carry the same name in lowercase: `pdexv3_getState`, `pdexv3_txAddLiquidity` and `pdexv3_txTrade`.
 
 ### Known limit
 
-A single admin key can still change iDEX parameters such as fee rates. Removing it is the first phase of the [roadmap](/resources/roadmap).
+A single admin key can still change pDEX parameters such as fee rates. Removing it is the first phase of the [roadmap](/resources/roadmap).
 
 ---
 
-## iTokens
+## pTokens
 
-An iToken is a token on Zephyrium that moves with the same privacy as ZEP: the sender hides in a ring, the receiver gets a one-time address and the amount is hidden.
+An pToken is a token on Zephyrium that moves with the same privacy as ZEP: the sender hides in a ring, the receiver gets a one-time address and the amount is hidden.
 
 ### Creating one
 
 Any account can create a token with a fixed supply in one transaction. The whole supply is issued to the creator.
 
-On the devnet this is the `createandsendtokeninittransaction` RPC method, and iWallet lists the new token once it arrives. A newly created token needs a few blocks before it can be spent.
+On the devnet this is the `createandsendtokeninittransaction` RPC method, and pWallet lists the new token once it arrives. A newly created token needs a few blocks before it can be spent.
 
 ### Privacy of a token transfer
 
@@ -237,12 +237,12 @@ The code inherited a central issuing key that can mint new tokens. It is schedul
 
 ---
 
-## iWallet
+## pWallet
 
-iWallet is a Chrome extension wallet for the Zephyrium devnet. It builds private transactions in the browser, so spending keys never leave your device.
+pWallet is a Chrome extension wallet for the Zephyrium devnet. It builds private transactions in the browser, so spending keys never leave your device.
 
 :::note Devnet only
-iWallet is not in the Chrome Web Store. It is loaded as an unpacked extension and connects to a devnet node. Coins on a devnet have no value.
+pWallet is not in the Chrome Web Store. It is loaded as an unpacked extension and connects to a devnet node. Coins on a devnet have no value.
 :::
 
 ### What it does
@@ -250,8 +250,8 @@ iWallet is not in the Chrome Web Store. It is loaded as an unpacked extension an
 | Feature | Details |
 |---|---|
 | Send and receive ZEP | Payments land on one-time addresses automatically |
-| Tokens | Lists every iToken you hold and sends them |
-| iDEX | Add liquidity and swap from the popup |
+| Tokens | Lists every pToken you hold and sends them |
+| pDEX | Add liquidity and swap from the popup |
 | Connect to apps | Web pages can request a connection, balances and transactions; each needs your approval |
 
 ### How it protects keys

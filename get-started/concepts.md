@@ -6,7 +6,7 @@ Zephyrium is a layer-1 chain where privacy is the default for transfers.
 
 ## What is private
 
-| | Transfers of ZEP and tokens | Swaps on iDEX | Staking |
+| | Transfers of ZEP and tokens | Swaps on pDEX | Staking |
 |---|---|---|---|
 | Sender | Hidden in a ring of 8 | Hidden in a ring of 8 | Public |
 | Receiver | One-time address | One-time address | Public |
@@ -33,7 +33,7 @@ Three mechanisms do the work:
 These are known and on the [roadmap](/resources/roadmap):
 
 - **Small rings with uniform decoys.** Eight members, chosen without regard to coin age, is weaker than a larger, age-aware ring.
-- **Swap amounts are public.** iDEX hides who trades, not how much or which pair.
+- **Swap amounts are public.** pDEX hides who trades, not how much or which pair.
 - **The highway is a single relay.** It can see which address a transaction came from, and the chain stops if it is down.
 - **Fixed committee seats.** On the devnet, 5 of 7 shard seats and all 4 beacon seats are held by fixed validators.
 - **Wallets share a viewing key with their node.** A wallet registers a viewing key with the node it uses so the node can find its coins.

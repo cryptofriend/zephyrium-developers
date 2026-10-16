@@ -1,11 +1,11 @@
-# iWallet
+# pWallet
 
 > The browser-extension wallet for Zephyrium.
 
-iWallet is a Chrome extension wallet for the Zephyrium devnet. It builds private transactions in the browser, so spending keys never leave your device.
+pWallet is a Chrome extension wallet for the Zephyrium devnet. It builds private transactions in the browser, so spending keys never leave your device.
 
 :::note Devnet only
-iWallet is not in the Chrome Web Store. It is loaded as an unpacked extension and connects to a devnet node. Coins on a devnet have no value.
+pWallet is not in the Chrome Web Store. It is loaded as an unpacked extension and connects to a devnet node. Coins on a devnet have no value.
 :::
 
 ## What it does
@@ -13,8 +13,8 @@ iWallet is not in the Chrome Web Store. It is loaded as an unpacked extension an
 | Feature | Details |
 |---|---|
 | Send and receive ZEP | Payments land on one-time addresses automatically |
-| Tokens | Lists every iToken you hold and sends them |
-| iDEX | Add liquidity and swap from the popup |
+| Tokens | Lists every pToken you hold and sends them |
+| pDEX | Add liquidity and swap from the popup |
 | Connect to apps | Web pages can request a connection, balances and transactions; each needs your approval |
 
 ## How it protects keys

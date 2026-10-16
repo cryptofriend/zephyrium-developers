@@ -1,8 +1,8 @@
-# iDEX
+# pDEX
 
 > The exchange built into the Zephyrium chain.
 
-iDEX is an exchange that is part of the chain itself: pools and swaps are handled by the validators, with no separate contract to deploy.
+pDEX is an exchange that is part of the chain itself: pools and swaps are handled by the validators, with no separate contract to deploy.
 
 ## How it works
 
@@ -18,14 +18,14 @@ iDEX is an exchange that is part of the chain itself: pools and swaps are handle
 
 ## What is private, and what is not
 
-| | On iDEX today |
+| | On pDEX today |
 |---|---|
 | Who traded | Hidden: the trade is signed by a ring of 8 |
 | Where the proceeds go | Hidden: a one-time address |
 | Amount sold | **Public** |
 | Token pair | **Public** |
 
-iDEX gives anonymous trades, not confidential ones. Hiding swap amounts is a research item on the [roadmap](/resources/roadmap).
+pDEX gives anonymous trades, not confidential ones. Hiding swap amounts is a research item on the [roadmap](/resources/roadmap).
 
 ## Try it on the devnet
 
@@ -35,12 +35,12 @@ The devnet check creates a test token, adds a ZEP pool for it and swaps 1 ZEP:
 python3 tests/devnet/check.py
 ```
 
-The last line of its output reports the swap, for example `DEX swap: 1 ZEP bought 1.998002 iUSDt`.
+The last line of its output reports the swap, for example `DEX swap: 1 ZEP bought 1.998002 pUSDt`.
 
 ## Names in the code
 
-The code and RPC methods still use the inherited name, `pdex`. The methods you will see are `pdexv3_getState`, `pdexv3_txAddLiquidity` and `pdexv3_txTrade`.
+The RPC methods carry the same name in lowercase: `pdexv3_getState`, `pdexv3_txAddLiquidity` and `pdexv3_txTrade`.
 
 ## Known limit
 
-A single admin key can still change iDEX parameters such as fee rates. Removing it is the first phase of the [roadmap](/resources/roadmap).
+A single admin key can still change pDEX parameters such as fee rates. Removing it is the first phase of the [roadmap](/resources/roadmap).

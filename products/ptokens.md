@@ -1,14 +1,14 @@
-# iTokens
+# pTokens
 
 > Private tokens on Zephyrium.
 
-An iToken is a token on Zephyrium that moves with the same privacy as ZEP: the sender hides in a ring, the receiver gets a one-time address and the amount is hidden.
+An pToken is a token on Zephyrium that moves with the same privacy as ZEP: the sender hides in a ring, the receiver gets a one-time address and the amount is hidden.
 
 ## Creating one
 
 Any account can create a token with a fixed supply in one transaction. The whole supply is issued to the creator.
 
-On the devnet this is the `createandsendtokeninittransaction` RPC method, and iWallet lists the new token once it arrives. A newly created token needs a few blocks before it can be spent.
+On the devnet this is the `createandsendtokeninittransaction` RPC method, and pWallet lists the new token once it arrives. A newly created token needs a few blocks before it can be spent.
 
 ## Privacy of a token transfer
 

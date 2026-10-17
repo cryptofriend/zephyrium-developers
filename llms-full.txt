@@ -333,7 +333,7 @@ Until then, the [changelog](/resources/changelog) lists what has already shipped
 ZEP has a hard cap of 1,000,000,000. 71,000,000 are pre-minted at genesis for the ICO, and the remaining 929,000,000 are released over 21 years, with each year releasing 10% less than the one before.
 
 :::note On the devnet
-The project devnet still runs the previous schedule (21,000,000 at genesis, 979,000,000 minted by blocks, 299 of every 979 ZEP to validators). The 71,000,000 ZEP genesis and the 299/929 split are ready in the chain repository and take effect when the devnet is reset. The split between liquidity, foundation and team, and the team cliff, are not enforced on-chain yet; see [Validators and rewards](/validators/overview).
+The project devnet still runs the previous schedule (21,000,000 at genesis, 979,000,000 minted by blocks, 299 of every 979 ZEP to validators). The 71,000,000 ZEP genesis and the 299/929 split are ready in the chain repository and take effect when the devnet is reset. The split between liquidity, foundation and team is not enforced on-chain yet; see [Validators and rewards](/validators/overview).
 :::
 
 ### The schedule in short
@@ -346,21 +346,21 @@ The project devnet still runs the previous schedule (21,000,000 at genesis, 979,
 | Yearly decrease | 10% |
 | Curve years | 21 |
 | Year 1 curve release | 104,313,924 ZEP |
-| Cliff, Team & Contributors | 12 months |
+| Team lock | 12 months, held manually by the foundation |
 
 ### Who receives it
 
-| Share | Of the 1B cap | ZEP | Release | Cliff |
+| Share | Of the 1B cap | ZEP | Release | Lock |
 |---|---|---|---|---|
 | Validators | 29.9% | 299,000,000 | 21-year curve | None |
 | Liquidity | 21% | 210,000,000 | 21-year curve | None |
 | Foundation | 21% | 210,000,000 | 21-year curve | None |
-| Team & Contributors | 21% | 210,000,000 | 21-year curve | 1 year |
+| Team & Contributors | 21% | 210,000,000 | 21-year curve | 12 months, manual |
 | ICO | 7.1% | 71,000,000 | Pre-minted at genesis | None |
 
 The ICO includes what was earlier a separate investor allocation. It is minted in the genesis block to the foundation wallet, which distributes it to buyers.
 
-Team & Contributors accrue from genesis, but nothing is liquid during the first 12 months. What they accrued in year 1 unlocks when the cliff ends, so it is counted in year 2.
+There are no protocol cliffs. Every category is minted on the curve from block one, so the schedule is one smooth curve. Team & Contributors coins minted in the first 12 months are held by the foundation and released manually after the lock.
 
 ### Year by year
 
@@ -369,8 +369,8 @@ All figures are whole ZEP. Inflation is the year's unlock as a share of the supp
 | Year | Total unlocked | Validators | Liquidity | Foundation | Team & Contributors | ICO | Cumulative supply | Inflation |
 |---|---|---|---|---|---|---|---|---|
 | Genesis | 71,000,000 | 0 | 0 | 0 | 0 | 71,000,000 | 71,000,000 |  |
-| 1 | 80,733,812 | 33,573,588 | 23,580,112 | 23,580,112 | 0 | 0 | 151,733,812 | 113.71% |
-| 2 | 117,462,644 | 30,216,229 | 21,222,101 | 21,222,101 | 44,802,213 | 0 | 269,196,456 | 77.41% |
+| 1 | 104,313,924 | 33,573,588 | 23,580,112 | 23,580,112 | 23,580,112 | 0 | 175,313,924 | 146.92% |
+| 2 | 93,882,532 | 30,216,229 | 21,222,101 | 21,222,101 | 21,222,101 | 0 | 269,196,456 | 53.55% |
 | 3 | 84,494,279 | 27,194,606 | 19,099,891 | 19,099,891 | 19,099,891 | 0 | 353,690,735 | 31.39% |
 | 4 | 76,044,852 | 24,475,146 | 17,189,902 | 17,189,902 | 17,189,902 | 0 | 429,735,587 | 21.50% |
 | 5 | 68,440,364 | 22,027,631 | 15,470,911 | 15,470,911 | 15,470,911 | 0 | 498,175,951 | 15.93% |
@@ -393,21 +393,6 @@ All figures are whole ZEP. Inflation is the year's unlock as a share of the supp
 | **Total** | 1,000,000,000 | 299,000,000 | 210,000,000 | 210,000,000 | 210,000,000 | 71,000,000 | | |
 
 Year 21 takes the rounding remainder so each total is exact.
-
-### Around the cliff
-
-Cumulative ZEP unlocked at the end of selected months.
-
-| Month | Circulating supply | Validators | Liquidity | Foundation | Team & Contributors | ICO |
-|---|---|---|---|---|---|---|
-| 6 | 111,366,906 | 16,786,794 | 11,790,056 | 11,790,056 | 0 | 71,000,000 |
-| 11 | 145,005,995 | 30,775,789 | 21,615,103 | 21,615,103 | 0 | 71,000,000 |
-| 12 | 151,733,812 | 33,573,588 | 23,580,112 | 23,580,112 | 0 | 71,000,000 |
-| 13 | 183,137,467 | 36,091,607 | 25,348,620 | 25,348,620 | 25,348,620 | 71,000,000 |
-| 18 | 222,255,189 | 48,681,703 | 34,191,162 | 34,191,162 | 34,191,162 | 71,000,000 |
-| 24 | 269,196,456 | 63,789,817 | 44,802,213 | 44,802,213 | 44,802,213 | 71,000,000 |
-
-Circulating supply rises from 151,733,812 at month 12 to 183,137,467 at month 13, when the first year of Team & Contributors accrual unlocks.
 
 ---
 

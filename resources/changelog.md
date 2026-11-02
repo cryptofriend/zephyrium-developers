@@ -4,6 +4,12 @@
 
 Changes to the Zephyrium chain. Newest first.
 
+## 2026-11-02
+
+- Tokenomics v4, the three pillars: every block reward is split in three equal parts, 323/969 each to validators, liquidity providers and the DAO treasury. The liquidity part is minted on-chain at the end of each epoch into the pDEX (SWAP) pools, weighted by each pool's ZEP reserve unless governance sets per-pool weights; providers withdraw it with their LP fees. While no pool holds ZEP that part goes to the DAO treasury.
+- ICO reduced to 31,000,000 ZEP pre-minted at genesis; blocks mint 969,000,000 ZEP (`basic_reward` 34.478342477 ZEP, `max_reward` 969M). The wallet behind `dao_address` is now the DAO treasury.
+- `check.py` verifies the split before and after a pool exists. Consensus change: the project devnet needs a reset with a new 31M genesis.
+
 ## 2026-10-15
 
 - Reward split simplified to the v3.2 release schedule: 299/979 of every block to validators, 680/979 to one foundation wallet (`dao_address`). The finance, DAO and satoshi addresses are gone.

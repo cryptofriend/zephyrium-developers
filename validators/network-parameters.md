@@ -13,12 +13,12 @@ Zephyrium has one network today, the local devnet, configured in `config/local/`
 | Beacon committee | 4 seats, 4 fixed | `committee_size` |
 | Shard stake | 21,000 ZEP | `staking_amount_shard` |
 | Beacon stake minimum | 210,000 ZEP | `staking_amount_beacon_min` |
-| Block reward | 34.834156126 ZEP per shard block | `basic_reward` |
+| Block reward | 34.478342477 ZEP per shard block | `basic_reward` |
 | Yearly decrease | 10%, for 21 years | `tokenomics` |
-| Minted by blocks, cap | 979,000,000 ZEP | `max_reward` |
-| Reward shares | 299 validators / 680 foundation | `tokenomics` |
-| Genesis allocation | 21,000,000 ZEP to the foundation wallet | `init_tx.json` |
-| Foundation wallet | Payment address of the foundation key | `dao_address` |
+| Minted by blocks, cap | 969,000,000 ZEP | `max_reward` |
+| Reward shares | 323 validators / 323 liquidity providers / 323 DAO | `tokenomics` |
+| Genesis allocation | 31,000,000 ZEP (the ICO) to the DAO treasury | `init_tx.json` |
+| DAO treasury | Payment address of the treasury key | `dao_address` |
 
 Amounts in the config files are in the smallest unit: 1 ZEP = 1,000,000,000 units.
 
